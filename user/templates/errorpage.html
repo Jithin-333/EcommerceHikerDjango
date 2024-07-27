@@ -1,0 +1,12 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}error page{% endblock title %}
+
+{% block user_content %}
+
+<div class="error_page position-relative d-product.images.first.alt_text">
+    <img src="{% static 'images/erroreoops.webp '%}" alt="Error">
+    <button class="btn btn-danger position-absolute">Return Home</button>
+</div> 
+
+{% endblock user_content %}

@@ -1,0 +1,204 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}profile{% endblock title %}
+
+
+{% block user_content %}
+
+<div class="header-padding"></div>
+<div>
+    <div class="profile_body">
+       
+        <div class="container-fluid">
+            <div class="row d-flex justify-content-end">
+                <!-- Sidebar -->
+                <div id="sidebar" class="col-md-3 col-lg-2 sidebar">
+                    <div class="sidebar-sticky">
+                        
+                        <ul class="nav flex-column">
+                            <li class="">
+                                <a class="nav-link text-danger" href="#">
+                                   <h5> Manage My Account</h5>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="{% url 'user_profile' %}">My Profile/<small class="text-muted">edit</small></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'order_details' %}">My Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'manage_addresses' %}">Address</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'coupon_list' %}">Coupons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'wallet' %}">Wallet</a>
+                            </li>
+                            <li class="">
+                                <a class="nav-link text-danger" href="{% url "user_logout" %}">
+                                    <h5>Logout <i class="fas fa-sign-out-alt"></i></h5>
+                                </a>
+                            </li>
+                        </ul>
+                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarClose">Close</button>
+                    </div>
+                </div>
+
+                <!-- Main content -->
+                
+                <div  class="main col-md-8 col-lg-10 mb-3">
+                    <div class="d-flex justify-content-between  align-items-center pb-2  ps-5">
+                        <h1 class="h2">Edit Profile</h1>
+                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggle">Menu</button>
+                    </div>
+
+
+                    <div class="profile-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="row">
+                                    {% comment %} <div class="col-md-3">
+                                        <img src="profile-picture-placeholder.png" alt="Profile Picture" class="img-fluid rounded-circle">
+                                        <a href="#" class="d-block text-center">Edit Profile Picture</a>
+                                    </div> {% endcomment %}
+                                    <div class="col-md-9">
+                                        <h3>{{user.first_name}} {{user.last_name}}</h3>
+                                        <p>{{user.email}}</p>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <form method='post'>
+                                    {% csrf_token %}
+                                    <div class="form-group d-flex row">
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="firstName">First Name</label>
+                                            <input type="text" class="form-control" id="firstName" name="firstname" value="{{user.first_name}}">
+                                        </div>
+                                        <div class="form-group col-md-6 col-sm-12 ps-2">
+                                            <label for="lastName">Last Name</label>
+                                            <input type="text" class="form-control" id="lastName" name="lastname" value="{{user.last_name}}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex row">
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="email">Email</label>
+                                            <input type="email" class="form-control" name="email" id="email" value="{{user.email}}">
+                                        </div>
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="email">Phone</label>
+                                            <input type="text" class="form-control" name="phone" id="phone" value="{{user.phone}}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="address">Permanent Address</label>
+                                        <input type="text" class="form-control" name="permanentaddress" id="permanentaddress" value="{{user.addressOne}}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="address">Street Address</label>
+                                        <input type="text" class="form-control" name="streetaddress" id="streetaddress" value="{{user.street_address}}">
+                                    </div>
+                                    <div class="form-group d-flex row">
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="address">City</label>
+                                            <input type="text" class="form-control" name="city" id="city" value="{{user.city}}">
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="address">Postal Code</label>
+                                            <input type="text" class="form-control" name="postalcode" id="postalcode" value="{{user.postal_code}}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex row">
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="address">State</label>
+                                            <input type="text" class="form-control" name="state" id="state" value="{{user.state}}">
+                                        </div>
+                                        <div class="form-group col-md-6 col-sm-12">
+                                            <label for="address">Country</label>
+                                            <input type="text" class="form-control" name="country" id="country" value="{{user.country}}">
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="button" class=" btn-changepassword mb-3" data-toggle="modal" data-target="#passwordchangeModal"> change password</button>
+                                    </div>
+                                    <button type="reset" class="btn btn-secondary me-3">Reset</button>
+                                    <button type="submit" class="btn btn-success">Save Changes</button>
+                                    
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+  
+  <!-- Modal -->
+  <div class="modal fade" id="passwordchangeModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'profile_change_password' %}">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" class="form-control" name="current_password" id="currentPassword" placeholder="Current Password">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" class="form-control" name="new_password" id="newPassword" placeholder="New Password">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" class="form-control" name="confirm_password" id="confirmPassword" placeholder="Confirm New Password">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submint" class="btn btn-warning">Reset Password</button>
+                  </div>
+            </form>
+          
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  {% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',
+                title: '{{ message.tags|title }}',
+                text: '{{ message|safe }}',
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('d-block');
+    });
+
+    document.getElementById('sidebarClose').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('d-block');
+    });
+</script>
+
+{% endblock user_content %}

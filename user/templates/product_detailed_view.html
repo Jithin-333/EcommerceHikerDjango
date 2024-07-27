@@ -1,0 +1,384 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Product Detail{% endblock title %}
+
+{% block user_content %}
+
+<div class="breadcrumb_page">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pt-3 ps-3">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'explore' %}">Explore</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Product</li>
+        </ol>
+    </nav>
+</div>
+
+{% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show  mx-auto text-center" role="alert" id="alertBox">
+        <strong>{{message}}</strong> 
+    </div>
+{% endfor %}
+
+<div class="container product_detailed_view mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-images">
+                <!-- Main Image -->
+                <div class="mainimage">
+                    <div class="main-image" id="mainImageContainer">
+                        <img id="mainImage" src="{{ product.images.first.url }}" alt="{{ product.images.first.alt_text }}" class="img-fluid">
+                        <div id="zoomedImageContainer" class="zoomed-image-container">
+                            <img id="zoomedImage" src="{{ product.images.first.url }}" alt="{{ product.images.first.alt_text }}">
+                        </div>
+                    </div>
+                </div>
+
+                
+                <!-- Thumbnails -->
+                <div class="thumbnails">
+                    {% for image in product.images.all %}
+                        <img src="{{ image.url }}" alt="{{ image.alt_text }}" class="thumbnail img-thumbnail" onclick="changeMainImage('{{ image.url }}', '{{ image.alt_text }}')">
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <p class="text-start ">{{ product.name }}<p>
+
+            <h2 class="text-start ">{{product.short_description}}</h2>
+            
+            <p class="text-start">Category: {{ product.category.name }}</p>
+            <p class="text-start">{{ product.variant.name }} : {{product.variant_option.value}}</p>
+            <p class="text-start text-justify">{{ product.description }}</p>
+            
+            <div class="d-flex justify-content-between">
+                <div class="colors">
+                    <i class="fas fa-star gold-star"></i>
+
+                    <i class="fa fa-star gold-star"></i>
+                    <i class="fa fa-star gold-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                </div>
+                <div>
+                    {% if product.stock == 0 %}
+                        <p class="colors ps-5 text-danger">Out of Stock</p>
+                    {% else %}
+                        <p class="colors ps-5">Only {{ product.stock }} left</p>
+                    {% endif %}
+
+                </div>
+                <div>
+                    <p> {{ product.get_max_discount_percentage }}% </p>
+
+                </div>
+                
+            </div>
+            <div class="price d-flex">
+                <span class="_price">₹{{ product.offer_price|floatformat:"0" }}.00</span>
+                <span class="ps-3 pt-1 text-decoration-line-through">₹{{product.price}}</span>
+                {% comment %} {% if product.discount_price %}
+                    <span class="ps-3 pt-1 text-decoration-line-through">₹{{ product.original_price }}</span>
+                {% endif %} {% endcomment %}
+            </div>
+
+
+            <div class="bottom">
+                <div class="buttons">
+                    <button class="btn btn-outline-warning rounded-pill" id="addToCartBtn" data-product-id="{{ product.id }}" >
+                        Add to Cart
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                </div>
+                <div class="buttons">
+                    {% if product in user.wishlist.items.all %}
+                        <button class="btn btn-outline-danger rounded-pill wishlist-toggle" data-product-id="{{ product.id }}">
+                            <span class="wishlist-text">Remove from Wishlist</span>
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-danger rounded-pill wishlist-toggle" data-product-id="{{ product.id }}">
+                            <span class="wishlist-text">Add to Wishlist</span>
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Add more product details here as needed -->
+
+        </div>
+        
+    </div>
+   
+</div>
+<div class="container featurs">
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded  p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                    <i class="fas fa-car-side fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>Free Shipping</h5>
+                    <p class="mb-0">Free on order over $300</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded  p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                    <i class="fas fa-user-shield fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>Security Payment</h5>
+                    <p class="mb-0">100% security payment</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded  p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning  mx-auto">
+                    <i class="fas fa-exchange-alt fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>30 Day Return</h5>
+                    <p class="mb-0">30 day money guarantee</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                    <i class="fas fa-phone-alt fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>24/7 Support</h5>
+                    <p class="mb-0">Support every time fast</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div>
+    <h1>Similar Products</h1>
+</div>
+<div class="row justify-content-center">
+    {% for item in similar_products %}
+    {% with similar_product=item %}
+   
+    <div class="product_card col-sm-10 col-md-4" onclick="location.href='{% url 'product_detail' similar_product.id %}';" style="cursor: pointer;"> 
+        {% for offer in item.offers %}
+        {% if offer.discount_percentage %}
+        <div class="offer-banner">
+            <span class="badge bg-success">{{ offer.discount_percentage }}% OFF</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+        <div class="add_to_wishlist">
+            <i class="far fa-heart fa-2x"></i>
+        </div>
+
+        <div class="image">
+           
+            <img src="{{ similar_product.images.all.0.url }}" alt="{{ similar_product.images.all.0.alt_text }}">
+            
+        </div>
+        <div class="product_info">
+            <h2 class="text-center">{{ similar_product.name }}</h2>
+            <h2 class="product_name">{{ similar_product.short_description }}</h2>
+            <p>{{ similar_product.category.name }}</p>
+            <div class="d-flex ">
+                <div class="colors">
+                    <i class="fas fa-star gold-star"></i>
+
+                    <i class="fa fa-star gold-star"></i>
+                    <i class="fa fa-star gold-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                </div>
+                <div>
+                
+                    {% if similar_product.stock == 0 %}
+                        <p class="colors ps-5 text-danger">Out of Stock</p>
+                    {% else %}
+                        <p class="colors ps-5">Only {{ similar_product.stock }} left</p>
+                    {% endif %}
+
+
+                </div>
+                
+            </div>
+            <div class="price d-flex">
+                <span class="_price">₹{{similar_product.price}}</span>
+                <span class="ps-3 pt-1 text-decoration-line-through">₹3,999</span>
+                {% comment %} {% if product.discount_price %}
+                    <span class="ps-3 pt-1 text-decoration-line-through">₹{{ product.original_price }}</span>
+                {% endif %} {% endcomment %}
+            </div>
+
+           
+        </div>
+    </div>
+    
+    {% endwith %}
+    {% endfor %}
+</div>
+<div class="features-section row d-flex">
+    <div class="feature-item feature-free-shipping col-12 col-md-6">
+        <div class="feature-border"></div>
+        <img src="{% static 'images/free shiping icon.png '%}" alt="Free Shipping Icon">
+        <div>
+            <h3>Free Shipping</h3>
+            <p>Enjoy free shipping on all orders, with no minimum purchase required. Add your favorite 
+                items to the cart and we'll deliver them to your doorstep, hassle-free.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-valuable-gifts col-12 col-md-6 position-relative">
+        <div class="feature-border border-success"></div>
+        <img src="{% static 'images/valublegift2.png '%}" alt="Valuable Gifts Icon">
+        <div>
+            <h3>Valuable Gifts</h3>
+            <p>Find the perfect gifts for any occasion. Our curated selection includes premium 
+                products and exclusive bundles designed to delight and impress.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support col-12 col-md-6 ">
+        <div class="feature-border border-danger"></div>
+        <img src="{% static 'images/technical-support-64.png '%}" alt="All Day Support Icon">
+        <div>
+            <h3>All Day Support</h3>
+            <p> Our support team is available 24/7 to assist with any queries or concerns. 
+                Contact us anytime via chat, email, or phone for a seamless shopping experience.!</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support-dark col-12 col-md-6 position-relative">
+        <div class="feature-border border-warning"></div>
+        <img src="{% static 'images/trustedpartner.png '%}" alt="All Day Support Dark Icon">
+        <div>
+            <h3>Trusted Partner</h3>
+            <p>Shop with confidence, knowing we offer top-quality products from trusted brands. Our commitment to quality and 
+                customer satisfaction ensures a reliable shopping experience.</p>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+function changeMainImage(url, altText) {
+    const mainImage = document.getElementById('mainImage');
+    const zoomedImage = document.getElementById('zoomedImage');
+    mainImage.src = url;
+    mainImage.alt = altText;
+    zoomedImage.src = url;
+    zoomedImage.alt = altText;
+}
+
+// Zoom effect
+const mainImageContainer = document.getElementById('mainImageContainer');
+const zoomedImageContainer = document.getElementById('zoomedImageContainer');
+const zoomedImage = document.getElementById('zoomedImage');
+
+mainImageContainer.addEventListener('mousemove', function(event) {
+    const rect = mainImageContainer.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const xPercent = (x / rect.width) * 100;
+    const yPercent = (y / rect.height) * 100;
+    
+    zoomedImage.style.left = `-${xPercent}%`;
+    zoomedImage.style.top = `-${yPercent}%`;
+    
+    zoomedImageContainer.style.display = 'block';
+});
+
+mainImageContainer.addEventListener('mouseleave', function() {
+    zoomedImageContainer.style.display = 'none';
+});
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#addToCartBtn').on('click', function(e) {
+            e.preventDefault();
+            
+            var productId = $(this).data('product-id');
+            var url = "{% url 'add_to_cart' 999999 %}".replace('999999', productId);
+            
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: response.status,
+                        title: response.status === 'success' ? 'Success!' : 'Oops...',
+                        text: response.message,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the item to the cart. Please try again.');
+                }
+            });
+        });
+    });
+    </script>
+    <script>
+    $(document).ready(function() {
+        $('.wishlist-toggle').on('click', function(e) {
+            e.preventDefault();
+            var button = $(this);
+            var productId = button.data('product-id');
+            
+            $.ajax({
+                url: '{% url "toggle_wishlist" %}',
+                type: 'POST',
+                data: {
+                    'product_id': productId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Wishlist Updated',
+                            text: response.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        
+                        // Toggle button text
+                        var textSpan = button.find('.wishlist-text');
+                        if (response.in_wishlist) {
+                            textSpan.text('Remove from Wishlist');
+                        } else {
+                            textSpan.text('Add to Wishlist');
+                        }
+                        
+                        // Optionally, you can also toggle a class for styling
+                        button.toggleClass('in-wishlist', response.in_wishlist);
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'An error occurred. Please try again.',
+                    });
+                }
+            });
+        });
+    });
+    </script>
+
+{% endblock user_content %}

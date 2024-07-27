@@ -1,0 +1,348 @@
+
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}user LogIn{% endblock title %}
+
+{% block user_content %}
+
+<div>
+{% comment %} ---------------carousel slide---------- {% endcomment %}
+    <div id="carouselExampleDark" class="carousel carousel-dark slide pt-5" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+        <div class="carousel-item active" data-bs-interval="10000">
+            <img src="{% static 'images/GERBER_1800_X_700px.webp' %}" class="d-block " alt="...">
+            <div class="carousel-caption d-none d-md-block text-light">
+            <h5 class="fw-bolder">Best Multi Tools</h5>
+            <button class="btn btn-danger fw-bold">Shop Now</button>
+
+            </div>
+        </div>
+        <div class="carousel-item" data-bs-interval="2000">
+            <img src="{% static 'images/pexels-mcclave-104750.jpg' %}" class="d-block" alt="...">
+            <div class="carousel-caption d-none d-md-block text-light">
+            <h2 class="fw-bolder">Best Hammocks</h2>
+            <p class=" fw-bolder">Easy to set up and store, our hammocks are ideal for any setting. Enjoy the gentle sway and embrace the tranquility that only a hammock can provide</p>
+            <button class="btn btn-danger fw-bold">Shop Now</button>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'images/Petzl_-_Access_the_inaccessible_-_1800x700_px.webp' %}" class="d-block " alt="...">
+            <div class="carousel-caption d-none d-md-block">
+            <h5>Third slide label</h5>
+            <p>Some representative placeholder content for the third slide.</p>
+            </div>
+        </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    {% comment %} ---------------carousel slide ENDS---------- {% endcomment %}
+
+    <div class=" m-5 row d-flex justify-content-center">
+        <img class="col-12 col-md-5 col-lg-4" src="{% static 'images/newarrivalicon.png' %}" class=" " alt="...">
+        
+    </div>
+{% comment %}-------------------- product detail cards----------------- {% endcomment %}
+    <div class="row justify-content-center">
+        {% for item in all_products %}
+        {% if forloop.counter <= 12 %}
+        {% with product=item.product %}
+       
+        <div class="product_card col-sm-10 col-md-4" data-aos="flip-left"  style="cursor: pointer;">
+
+            <div class="offer-banner">
+                <span class="badge bg-success">{{ item.product.get_discount_percentage }}% OFF</span>
+            </div>
+            <div class="add_to_wishlist" data-product-id="{{ product.id }}">
+                <i class="far fa-heart fa-2x {% if product in user.wishlist.items.all %}fas text-danger{% endif %}"></i>
+            </div>
+            <div onclick="location.href='{% url 'product_detail' product.id %}';">
+                <div class="image">
+                    {% if product.images.count > 0 %}
+                        <img src="{{ product.images.all.0.url }}" alt="{{ product.images.all.0.alt_text }}">
+                    {% endif %}
+                </div>
+               
+                
+                <div class="product_info">
+                    <h2 class="text-center">{{ product.name }}</h2>
+                    <h2 class="product_name">{{ product.short_description }}</h2>
+                    <p>{{ product.category.name }}</p>
+                    <div class="d-flex ">
+                        <div class="colors">
+                            <i class="fas fa-star gold-star"></i>
+
+                            <i class="fa fa-star gold-star"></i>
+                            <i class="fa fa-star gold-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <div>
+                            {% if product.stock == 0 %}
+                                <p class="colors ps-5 text-danger">Out of Stock</p>
+                            {% else %}
+                                <p class="colors ps-5">Only {{ product.stock }} left</p>
+                            {% endif %}
+
+                        </div>
+                        
+                    </div>
+                    <div class="price d-flex">
+                        <span class="_price">₹{{ product.offer_price|floatformat:"0" }}.00</span>
+                        <span class="ps-3 pt-1 text-decoration-line-through">₹{{product.price}}</span>
+                        {% comment %} {% if product.discount_price %}
+                            <span class="ps-3 pt-1 text-decoration-line-through">₹{{ product.original_price }}</span>
+                        {% endif %} {% endcomment %}
+                    </div>
+
+                
+                </div>
+            </div>
+        </div>
+        
+        {% endwith %}
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div class="m-4 d-flex justify-content-end">
+        <a href="{% url 'explore' %}"><button class="btn btn-outline-danger fw-bold">View All <i class="fas fa-arrow-right"></i></button></a>
+    </div>
+    <div class="container featurs" data-aos="fade-up" data-aos-duration="1000">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded  p-4">
+                    <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                        <i class="fas fa-car-side fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>Free Shipping</h5>
+                        <p class="mb-0">Free on order over $300</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded  p-4">
+                    <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                        <i class="fas fa-user-shield fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>Security Payment</h5>
+                        <p class="mb-0">100% security payment</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded  p-4">
+                    <div class="featurs-icon btn-square rounded-circle bg-warning  mx-auto">
+                        <i class="fas fa-exchange-alt fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>30 Day Return</h5>
+                        <p class="mb-0">30 day money guarantee</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded p-4">
+                    <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                        <i class="fas fa-phone-alt fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>24/7 Support</h5>
+                        <p class="mb-0">Support every time fast</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+    </div>
+{% comment %} +++++++++++++++side 2 static image and category starting++++++++++ {% endcomment %}
+
+    <div class="home_slide_two">
+        <img src="{% static 'images/slide/campingslidefirewithjeep .jpeg' %}" class="d-block " alt="">
+  
+        <div class=" slide-text-two">
+            <h1>Gear UP</h1>
+            <h2>Discover the Ultimate</h2>
+            <h2>Camping Gadgets for Your Next Adventure</h2>
+        </div>
+    </div>
+
+    <div class="text-center m-5">
+        <img src="{% static 'images/allcategories.png' %}" class="  " alt="...">
+        
+    </div>
+
+    <div class="row home_category ms-4 mb-5 d-flex justify-content-center">
+    
+        <div class="product-collection col-sm-10 col-md-3 ">
+            <div class="product-card">
+                <div class="product-vendor">Tent</div>
+                <div class="image-section">
+                    <div class="product-image">
+                    <img src="{% static 'images/category/istockphoto-1198338110-612x612.jpg' %}" alt="">
+                    </div>
+                </div>
+              
+                <div class="product-price">Starting From Rs. 850</div>
+                <div class="product-buy-now">
+                    <button>buy now</button>
+                </div>
+            </div>
+        </div>
+        <div class="product-collection col-sm-10 col-md-3">
+            <div class="product-card">
+                <div class="product-vendor">Sleeping Bag</div>
+                <div class="image-section">
+                    <div class="product-image">
+                    <img src="{% static 'images/category/istockphoto-469233068-612x612.jpg' %}" alt="">
+                    </div>
+                </div>
+              
+                <div class="product-price">Starting From Rs. 850</div>
+                <div class="product-buy-now">
+                    <button>buy now</button>
+                </div>
+            </div>
+        </div>
+        <div class="product-collection col-sm-10 col-md-3">
+            <div class="product-card">
+                <div class="product-vendor">Multi Tools</div>
+                <div class="image-section">
+                    <div class="product-image">
+                    <img src="{% static 'images/category/istockphoto-611293086-612x612.jpg' %}" alt="">
+                    </div>
+                </div>
+              
+                <div class="product-price">Starting From Rs. 850</div>
+                <div class="product-buy-now">
+                    <button>buy now</button>
+                </div>
+            </div>
+        </div>
+        <div class="product-collection col-sm-10 col-md-3">
+            <div class="product-card">
+                <div class="product-vendor">Harness</div>
+                <div class="image-section">
+                    <div class="product-image">
+                    <img src="{% static 'images/category/gettyimages-1165045785-612x612.jpg' %}" alt="">
+                    </div>
+                </div>
+              
+                <div class="product-price">Starting From Rs. 850</div>
+                <div class="product-buy-now">
+                    <button>buy now</button>
+                </div>
+            </div>
+        </div>          
+
+</div>
+<div class="features-section row d-flex">
+    <div class="feature-item feature-free-shipping col-12 col-md-6">
+        <div class="feature-border"></div>
+        <img src="{% static 'images/free shiping icon.png '%}" alt="Free Shipping Icon">
+        <div>
+            <h3>Free Shipping</h3>
+            <p>Enjoy free shipping on all orders, with no minimum purchase required. Add your favorite 
+                items to the cart and we'll deliver them to your doorstep, hassle-free.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-valuable-gifts col-12 col-md-6 position-relative">
+        <div class="feature-border border-success"></div>
+        <img src="{% static 'images/valublegift2.png '%}" alt="Valuable Gifts Icon">
+        <div>
+            <h3>Valuable Gifts</h3>
+            <p>Find the perfect gifts for any occasion. Our curated selection includes premium 
+                products and exclusive bundles designed to delight and impress.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support col-12 col-md-6 ">
+        <div class="feature-border border-danger"></div>
+        <img src="{% static 'images/technical-support-64.png '%}" alt="All Day Support Icon">
+        <div>
+            <h3>All Day Support</h3>
+            <p> Our support team is available 24/7 to assist with any queries or concerns. 
+                Contact us anytime via chat, email, or phone for a seamless shopping experience.!</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support-dark col-12 col-md-6 position-relative">
+        <div class="feature-border border-warning"></div>
+        <img src="{% static 'images/trustedpartner.png '%}" alt="All Day Support Dark Icon">
+        <div>
+            <h3>Trusted Partner</h3>
+            <p>Shop with confidence, knowing we offer top-quality products from trusted brands. Our commitment to quality and 
+                customer satisfaction ensures a reliable shopping experience.</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    function toggleWishlist(productId, heartIcon) {
+        $.ajax({
+            url: '{% url "toggle_wishlist" %}',
+            type: 'POST',
+            data: {
+                'product_id': productId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Success:', response);
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Wishlist Updated',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1600
+                    });
+                    if (response.in_wishlist) {
+                        heartIcon.removeClass('far').addClass('fas text-danger');
+                    } else {
+                        heartIcon.removeClass('fas text-danger').addClass('far');
+                    }
+                } else {
+                    console.error('Unexpected response:', response);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'An unexpected error occurred. Please try again.',
+                    });
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error:', textStatus, errorThrown);
+                console.log('Response:', jqXHR.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'An error occurred. Please try again.',
+                });
+            }
+        });
+    }
+
+    $('.add_to_wishlist').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var productId = $(this).data('product-id');
+        var heartIcon = $(this).find('i');
+        toggleWishlist(productId, heartIcon);
+    });
+});
+</script>
+
+{% endblock user_content %}

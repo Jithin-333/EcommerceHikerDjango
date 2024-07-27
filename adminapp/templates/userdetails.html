@@ -1,0 +1,151 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}admin home{% endblock title %}
+
+{% block admin_content %}
+<div class='admin_content_search'>
+  <div class="container mt-1  mb-0">
+    <div class="banner_search">
+        <div class="text-white search_text">Customers</div>
+        <div class="search-container ">
+          <form action="{% url 'customer_search' %}" method="POST">{% csrf_token %}
+              <input type="text" placeholder="Search..." name="search">
+              <button type="submit"><i class="fas fa-search"></i></button>
+          </form>
+        </div>
+        <div>
+          <button type="button" class="delete-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            <i class="fas fa-trash"></i> 
+          </button>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="box  m-5">
+  <table class="table align-middle mb-0 table_bg ">
+    <thead class='text-light'>
+      <tr class='table_row_head'>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col"> Email</th>
+        <th scope="col">Phone</th>
+        <th scope="col">Address</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+
+    <!-- table-body-start -->
+    <tbody>
+      {% for user in users %}
+      {% if user.is_active %}
+      <tr>
+        <td scope="row">
+          <p class="text-dark mb-0">{{ user.index }}</p>
+        </td>
+
+        <td scope="row">
+          {% if user.first_name %}
+            <p class="fw-bold text-dark mb-1">{{user.first_name}} {{ user.last_name }}</p>
+          {% else %}
+            <p class="fw-bold text-dark mb-1">{{user.username}}</p>
+          {% endif %}
+
+        </td>
+
+        <td scope="row">
+          <p class="text-dark mb-0">{{user.email | default:"email is not provided"}}</p>
+        </td>
+
+        <td scope="row">
+          <p class="text-dark mb-0">{{ user.phone }}</p>
+        </td>
+
+        <td scope="row">
+          <p class="text-dark mb-0">{{ user.address }}</p>
+        </td>
+        
+        <td scope="row">
+          {% if not user.is_superuser %}
+          <form action="{% url 'toggle_block_user' user.id %}" method="POST">
+            {% csrf_token %}
+            {% if user.is_active %}
+                <button type="submit" class="btn btn-danger block">Delete</button>
+            {% else %}
+                <button type="submit" class="btn btn-success">Unblock</button>
+            {% endif %}
+          </form>
+          {% endif %}
+        </td>
+        
+      </tr>
+      {% endif %}
+      {% endfor %}
+
+    </tbody>
+  </table>
+
+</div>
+
+<!-- Modal for viewing the deleted users-->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Blocked User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <table class="table align-middle mb-0 ">
+          <thead class='text-light'>
+            <tr class='table_row_head'>
+              <th scope="col">Name</th>
+              <th scope="col"> Email</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+      
+          <!-- table-body-start -->
+          <tbody>
+            {% for user in users %}
+            {% if not user.is_active%}
+            
+            <tr>
+              <td scope="row">
+                  <p class="fw-bold text-dark mb-1">{{user.first_name}} {{ user.last_name }}</p>
+              </td>
+      
+              <td scope="row">
+                <p class="text-dark mb-0">{{user.email | default:"email is not provided"}}</p>
+              </td>
+              <td scope="row">
+                {% if not user.is_superuser %}
+                <form action="{% url 'toggle_block_user' user.id %}" method="POST">
+                  {% csrf_token %}
+                  {% if not user.is_active %}
+                      <button type="submit" class="btn btn-success">Unblock</button>
+                  {% endif %}
+                </form>
+                {% endif %}
+              </td>
+              
+            </tr>
+            {% endif %}
+            {% endfor %}
+      
+          </tbody>
+        </table>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+{% endblock admin_content %}

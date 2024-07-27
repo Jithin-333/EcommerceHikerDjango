@@ -1,0 +1,263 @@
+{% extends 'admin_base.html' %}
+{% block title %}Edit Product{% endblock title %}
+
+{% block admin_content %}
+
+
+
+<div class="container my-5 edit_product ">
+    <div class="card p-4">
+        {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+     
+        <form action ="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+           
+            <div class="row mb-3 text-dark">
+                <div class="col-md-6">
+                    <label for="productName" class="form-label">Product Name*</label>
+                    <input type="text" class="form-control" id="productName" name="name" value="{{ products.name }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="shortDescription" class="form-label">Short Description*</label>
+                    <textarea class="form-control" name="short_description" id="shortDescription" rows="2" >{{ products.short_description }}</textarea>
+                </div>
+                
+            </div>
+            <div class="row mb-3 mt-3">
+               
+                
+                <div class="col-12">
+                    <label for="description" class="form-label">Description*</label>
+                    <textarea class="form-control" name="description" id="description" rows="3">{{ products.description }}</textarea>
+                </div>
+            </div>
+            <div class="row mb-3">
+
+                <div class="col-md-3 col-6">
+                    <label for="price" class="form-label">Price*</label>
+                    <input type="number" class="form-control" id="price" name="price" value="{{ products.price }}">
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <label for="category" class="form-label">Category*</label>
+                    <select class="form-select" id="category" name="category">
+            
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id == products.category.id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3 col-6">
+                    <label for="variant" class="form-label">Variant</label>
+                    <select class="form-select" id="variant" name="variant">
+                        {% for variant in variants %}
+                            <option value="{{ variant.id }}" {% if variant.id == products.variant.id %}selected{% endif %}>{{ variant.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 col-6">
+                    <label for="variant_option" class="form-label">Variant Option</label>
+                    <select class=" form-select" id="variant_option" name="variant_option">
+                        
+                        {% for option in variant_options %}
+                            <option value="{{ option.id }}" data-variant="{{ option.variant.id }}"
+                                {% if option == products.variant_option %}selected{% endif %}>   {{ option.value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 col-6">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" id="quantity" name="stock" value="{{ products.stock }}">
+                </div>
+                
+            
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="">
+                        <label for="discount_percentage" class="form-label">Offer Discount Percentage</label>
+                        <input type="number" class="form-control" id="discount_percentage" name="discount_percentage" value="{% if products.offer_set.all %}{{ products.offer_set.first.discount_percentage }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="">
+                        <label for="image1" class="form-label">Product_Images</label>
+                        <input class="form-control" type="file" id="image1" name="images" multiple>
+                    </div>
+                
+                </div>
+            </div>
+
+            <div class="form-group border border-warning rounded">
+                <label>Existing Images:</label>
+                <div class="row">
+                    {% for image in images %}
+                        <div class="col-md-3 edit_product_card">
+                            <div class="card mb-3">
+                                <img src="{{ image.image.url }}" class="card-img-top" alt="...">
+                                <div class="card-body text-center">
+                                    <a href="{% url 'delete_image' image.id %}" class="btn btn-danger">Remove</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-success">Save Product</button>
+            </div>
+          
+        </form>
+      
+        
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageInput = document.getElementById('image1');
+
+        imageInput.addEventListener('change', function () {
+            if (this.files.length > 4) {
+                Swal.fire({
+                    title: "Error!",
+                    text: "You can only select up to 4 files.",
+                    icon: "error"
+                });
+                this.value = ''; // Clear the input
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const variantSelect = document.getElementById('variant');
+        const variantOptionSelect = document.getElementById('variant_option');
+
+        function updateVariantOptions() {
+            const selectedVariantId = variantSelect.value;
+            
+            // Hide all options first
+            Array.from(variantOptionSelect.options).forEach(option => {
+                option.style.display = 'none';
+            });
+
+            // Show only relevant options
+            Array.from(variantOptionSelect.options).forEach(option => {
+                if (option.dataset.variant === selectedVariantId) {
+                    option.style.display = '';
+                }
+            });
+
+            // If the currently selected option is not valid for the current variant, reset it
+            if (variantOptionSelect.selectedOptions[0].style.display === 'none') {
+                variantOptionSelect.value = '';
+            }
+        }
+
+        variantSelect.addEventListener('change', updateVariantOptions);
+
+        // Call the function on page load to set the initial state
+        updateVariantOptions();
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+    
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            const errors = [];
+    
+            // Product Name validation
+            const productName = document.getElementById('productName');
+            if (productName.value.trim() === '') {
+                isValid = false;
+                errors.push('Product Name is required.');
+            } else if (!/^[a-zA-Z\s]+$/.test(productName.value)) {
+                isValid = false;
+                errors.push('Product Name should only contain letters, numbers, and spaces.');
+            }
+    
+            // Description validation
+            const description = document.getElementById('description');
+            if (description.value.trim() === '') {
+                isValid = false;
+                errors.push('Description is required.');
+            }
+    
+            // Short Description validation
+            const shortDescription = document.getElementById('shortDescription');
+            if (shortDescription.value.trim() === '') {
+                isValid = false;
+                errors.push('Short Description is required.');
+            }
+    
+            // Price validation
+            const price = document.getElementById('price');
+            if (price.value.trim() === '') {
+                isValid = false;
+                errors.push('Price is required.');
+            } else if (parseFloat(price.value) < 0) {
+                isValid = false;
+                errors.push('Price cannot be negative.');
+            }
+    
+            // Category validation
+            const category = document.getElementById('category');
+            if (category.value === '') {
+                isValid = false;
+                errors.push('Category is required.');
+            }
+    
+            // Variant validation
+            const variant = document.getElementById('variant');
+            if (variant.value === '') {
+                isValid = false;
+                errors.push('Variant is required.');
+            }
+    
+            // Variant Option validation
+            const variantOption = document.getElementById('variant_option');
+            if (variantOption.value === '') {
+                isValid = false;
+                errors.push('Variant Option is required.');
+            }
+    
+            // Stock validation
+            const stock = document.getElementById('quantity');
+            if (stock.value.trim() === '') {
+                isValid = false;
+                errors.push('Quantity is required.');
+            } else if (parseInt(stock.value) < 0) {
+                isValid = false;
+                errors.push('Quantity cannot be negative.');
+            }
+    
+            // Discount Percentage validation
+            const discountPercentage = document.getElementById('discount_percentage');
+            if (discountPercentage.value !== '' && (parseFloat(discountPercentage.value) < 0 || parseFloat(discountPercentage.value) > 100)) {
+                isValid = false;
+                errors.push('Discount Percentage must be between 0 and 100.');
+            }
+    
+            if (!isValid) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Validation Error',
+                    html: errors.join('<br>'),
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+            }
+        });
+    });
+    </script>
+
+
+{% endblock admin_content %}

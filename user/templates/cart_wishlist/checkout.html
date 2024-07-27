@@ -1,0 +1,400 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Billing Details{% endblock title %}
+
+{% block user_content %}
+
+<div class="header-padding"></div>
+
+<div class="container checkout_page mb-3">
+    <form id="billing-form" method="POST" action="{% url 'place_order' %}">
+        {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card text-start">
+                <div class="card-header">
+                    <h2>Billing Details</h2>
+                </div>
+                <div class="card-body">
+                    
+                        <div class="form-group">
+                            <label for="address-select">Select Address</label>
+                            <select class="form-control" id="address-select" name="address-select">
+                                <option value="">-- Select an address --</option>
+                                {% for address in user_addresses %}
+                                    <option value="{{ address.id }}"> {{ address.name }},{{ address.apartment_address }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="first-name">Name*</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="street-address">Apartment Address*</label>
+                            <input type="text" class="form-control" id="apartment-address" name="apartment-address" required>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label for="phone-number">Phone Number*</label>
+                                <input type="text" class="form-control" id="phone-number" name="phone" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="phone-number">Phone Number*</label>
+                                <input type="text" class="form-control" id="alternate-phone" name="phone_alternate" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label for="city">Town/City*</label>
+                                <input type="text" class="form-control" id="city" name="city" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="pin">Pin*</label>
+                                <input type="text" class="form-control" id="zip-code" name="zip-code" required>
+                            </div>
+                        </div>
+                        <div class="row"> 
+                            <div class="form-group col-6">
+                                <label for="state">State*</label>
+                                <input type="text" class="form-control" id="state" name="state" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="state">Country*</label>
+                                <input type="text" class="form-control" id="country" name="country" required>
+                            </div>
+                        </div>
+                        
+                        {% comment %} <div class="form-group">
+                            <label for="email">Email Address*</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div> {% endcomment %}
+
+                        <div class="form-check mt-3">
+                            <input type="checkbox" class="form-check-input" id="save-info" name="save-info">
+                            <label class="form-check-label" for="save-info">Save this information for faster checkout next time</label>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-start">
+                <div class="card-body">
+                    <div class=" d-flex justify-content-between border border-success border-bottom-0">
+                        <p class="">Number of Products: <span id="product-count">0</span></p>
+                        <p class="">Total Quantity: <span id="total-quantity">0</span></p>
+                        
+                    </div>
+                    <div class=" d-flex justify-content-between border border-success border-top-0">
+                        <p class="">Subtotal: ₹ <span id="subtotal">0.00</span>.00</p>
+                        <p class="">Discount: ₹ <span id="discount">0.00</span></p>
+                        
+                    </div>
+                    
+
+                    <div class="form-group mt-3">
+                        <label for="coupon-select">Select Coupon</label>
+                        <div class="input-group mb-3">
+                            <select class="form-control" id="coupon-select" name="coupon_code">
+                                <option value="">-- Select a coupon --</option>
+                                {% for coupon in available_coupons %}
+                                    <option value="{{ coupon.code }}"> {{ coupon.code }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-apply" id="apply-coupon">Apply Coupon</button>
+                                <button type="button" class="btn btn-danger" id="remove-coupon" style="display: none;">Remove Coupon</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="d-flex justify-content-between  mt-4">
+                        <p class="">Coupon Discount: ₹ <span id="coupon-discount">0</span></p>
+                        <p class="">Wallet Balance: ₹ <span id="wallet-balance">{{ wallet.balance }}</span></p>
+
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <p>Payable Amount: ₹ <span id="total-amount">0.00</span></p>
+                        <p class="">Shipping: Free</p>
+                    </div>
+                    <h3 class="mt-3">Select Payment Method :</h3>
+                   
+                        <div class="form-check checkform m-4">
+                            <input class="form-check-input" type="radio" name="payment-method" id="wallet" value="WALLET">
+                            <label class="form-check-label" for="wallet">
+                                Wallet<img class="img-option3" src="{% static 'images/money-bag-dollar-color-icon.png '%}" alt="">
+                            </label>
+                        </div>
+                        <div class="form-check checkform m-4">
+                            <input class="form-check-input" type="radio" name="payment-method" id="upi-payments" value="UPI_PAYMENTS">
+                            <label class="form-check-label" for="upi-payments">
+                                <img class="img-option" src="{% static 'images/razorpay-icon.png '%}" alt="">
+                            </label>
+                        </div>
+                        <div class="form-check checkform mt-4 ms-4">
+                            <input class="form-check-input " type="radio" name="payment-method" id="cod" value="COD">
+                            <label class="form-check-label" for="cod">
+                                COD<img class="img-option2" src="{% static 'images/money-notes-receiving-dollar-color-icon.png '%}" alt="">
+
+                            </label>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-place-order">Place order</button>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+
+<div class="container featurs">
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded  p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                    <i class="fas fa-car-side fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>Free Shipping</h5>
+                    <p class="mb-0">Free on order over $300</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded  p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                    <i class="fas fa-user-shield fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>Security Payment</h5>
+                    <p class="mb-0">100% security payment</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded  p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning  mx-auto">
+                    <i class="fas fa-exchange-alt fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>30 Day Return</h5>
+                    <p class="mb-0">30 day money guarantee</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="featurs-item text-center rounded p-4">
+                <div class="featurs-icon btn-square rounded-circle bg-warning mx-auto">
+                    <i class="fas fa-phone-alt fa-3x text-white"></i>
+                </div>
+                <div class="featurs-content text-center">
+                    <h5>24/7 Support</h5>
+                    <p class="mb-0">Support every time fast</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Load cart details
+    function loadCartDetails() {
+        $.ajax({
+            url: '{% url "get_cart_details" %}',
+            type: 'GET',
+            success: function(data) {
+                $('#product-count').text(data.product_count)
+                $('#total-quantity').text(data.quantity_count);
+                $('#subtotal').text(data.subtotal);
+                $('#total-amount').text(data.total);
+                updateTotalAmount();
+            }
+        });
+    }
+    loadCartDetails();
+    
+ 
+
+
+    // Address selection
+    $('#address-select').change(function() {
+        var addressId = $(this).val();
+        if (addressId) {
+            $.ajax({
+                url: '{% url "get_address_details" %}',
+                type: 'GET',
+                data: { 'address_id': addressId },
+                success: function(data) {
+                    $('#name').val(data.name);
+                    $('#apartment-address').val(data.apartment_address);
+                    $('#phone-number').val(data.phone);
+                    $('#alternate-phone').val(data.phone_alternate);
+                    $('#city').val(data.city);
+                    $('#zip-code').val(data.zip_code);
+                    $('#state').val(data.state);
+                    $('#country').val(data.country);
+                }
+            });
+        }
+    });
+
+    // Apply coupon
+    $('#apply-coupon').click(function() {
+        var couponCode = $('#coupon-select').val();
+        if (couponCode) {
+            applyCoupon(couponCode);
+        }
+    });
+
+    // Remove coupon
+    $('#remove-coupon').click(function() {
+        removeCoupon();
+    });
+  // Apply coupon
+  function applyCoupon(couponCode) {
+        $.ajax({
+            url: '{% url "apply_coupon" %}',
+            type: 'POST',
+            data: {
+                'coupon_code': couponCode,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(data) {
+                if (data.valid) {
+                    $('#coupon-discount').text(data.discount);
+                    updateTotalAmount();
+                    $('#remove-coupon').show();
+                    $('#apply-coupon').hide();
+                    $('#coupon-select').prop('disabled', true);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Applied...',
+                        text: 'Coupon applied successfully!',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Invalid coupon code: ' + (data.reason || 'Unknown error'),
+                    });
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('AJAX error:', textStatus, errorThrown);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Error applying coupon. Please try again.',
+                });
+            }
+        });
+    }
+
+    function removeCoupon() {
+        $('#coupon-discount').text('0');
+        updateTotalAmount();
+        $('#remove-coupon').hide();
+        $('#apply-coupon').show();
+        $('#coupon-select').prop('disabled', false).val('');
+        Swal.fire({
+            icon: 'success',
+            title: 'Removed...',
+            text: 'Coupon removed successfully!',
+        });
+    }
+
+    function updateTotalAmount() {
+        var subtotal = parseFloat($('#subtotal').text());
+        var discount = parseFloat($('#coupon-discount').text());
+        var totalAmount = subtotal - discount;
+        $('#total-amount').text(totalAmount.toFixed(2));
+    }
+    function checkWalletBalance() {
+        var paymentMethod = $('input[name="payment-method"]:checked').val();
+        var totalAmount = parseFloat($('#total-amount').text());
+        var walletBalance = parseFloat($('#wallet-balance').text());
+    
+        if (paymentMethod === 'WALLET' && totalAmount > walletBalance) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Insufficient wallet balance. Please choose another payment method.',
+                
+            });
+            return false;
+        }
+        return true;
+    }
+    
+    $('#billing-form').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '{% url "place_order" %}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.status === 'success') {
+                    if (response.razorpay_order_id) {
+                             // Construct the redirect URL with the required data
+
+                        const redirectUrl = `${response.payment_url}?order=${response.order}&razorpay_order_id=${response.razorpay_order_id}&razorpay_api_key=${response.razorpay_api_key}&total_amount=${response.total_amount}`;
+                    
+                        // Redirect to the constructed URL
+                        window.location.href = redirectUrl;
+
+                    } else if (response.redirect) {
+                        // For wallet payment
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = response.redirect;
+                            }
+                        });
+                    } else {
+                        // For COD
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '{% url "order_details" %}';
+                            }
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.message,
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                });
+            }
+        });
+    });
+});
+        
+</script>
+
+{% endblock user_content %}

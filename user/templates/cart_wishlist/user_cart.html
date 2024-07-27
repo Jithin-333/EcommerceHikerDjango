@@ -1,0 +1,219 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Product Detail{% endblock title %}
+
+{% block user_content %}
+
+<div class="header-padding"></div>
+
+<div class="user_cart ms-4">
+    <div class="container pt-4 pb-4 mb-4">
+        <h2 class="text-center">Shopping Cart</h2>
+        <div class="row mt-5">
+            <div class="col-lg-8 col-md-7">
+                <div class="card">
+                    <h4>Cart({{cart_count}})</h4>
+                    {% for item in cart_items %}
+                        <div class="store-item mt-2">
+                            <div class="row m-1">
+                                <div class="col-lg-3">
+                                    <img class="image-store" src="{{ item.product.images.first.url }}" alt="{{ item.product.name }}">
+                                </div>
+                                <div class="col-lg-9">
+                                    <div class="mt-3 mt-lg-0 d-flex align-items-center justify-content-between">
+                                        <h4>{{ item.product.name }}</h4>
+                                        <div class="btn-quantity-container" id="quantity-container-{{ item.product.id }}">
+                                            <button class="btn-quantity sub-quantity" data-product-id="{{ item.product.id }}">-</button>
+                                            <span class="px-2 quantity-display" id="quantity-{{ item.product.id }}">{{ item.quantity }}</span>
+                                            <button class="btn-quantity add-quantity" data-product-id="{{ item.product.id }}">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="list-store d-flex align-items-center justify-content-between">
+                                        <p>Categorie: {{ item.product.category }}</p>
+                                        {% comment %} <p class="p-note"></p> {% endcomment %}
+                                    </div>
+                                    <div class="list-store">
+                                        <p>{{ item.product.variant}} : {{ item.product.variant_option.value}}</p>
+                                        <p>{{item.product.short_description }}</p>
+                                    </div>
+                                    <div class="list-store d-flex  justify-content-between pt-5">
+                                        <div>
+                                            <a href="{% url 'remove_from_cart' item.product.id %}"><button class=" btn-outline-danger btn-list"><i class="fa fa-trash"></i> Remove Item</button></a>
+                                            
+                                        </div>
+                                        <h5>₹{{ item.product.offer_price|floatformat:"0"}}.00</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-line"></div>
+                    {% endfor %}
+                    <!-- Repeat the above store-item structure for the second item -->
+                     
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="card">
+                    <h4>The total amount of</h4>
+                    <div class="store-item mt-2 p-2">
+                        <div class="list-store d-flex align-items-center justify-content-between">
+                            <p>Temporary amount</p>
+                            <p>₹53.98</p>
+                        </div>
+                        
+                        <div class="list-store d-flex align-items-center justify-content-between">
+                            <p>Shipping</p>
+                            <p>Gratis</p>
+                        </div>
+                        <div class="bottom-line"></div>
+                        <div class="text-center"><h4>Total Items</h4></div>
+                        
+                        {% for item in cart_items %}
+                        <div class="list-store d-flex align-items-center justify-content-between">
+                            <p>{{item.product.name}}</p>
+                            <p>₹{{item.product.offer_price|floatformat:"0"}}.00</p>
+                        </div>
+                        {% endfor %}
+                        <div class="list-store d-flex align-items-center justify-content-between">
+                            <p>Shipping</p>
+                            <p>FREE</p>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <p class="p-total-label">The total amount of<br>(Including VAT)</p>
+                            <p class="p-total">₹53.98</p>
+                        </div>
+                        <a href = "{% url 'checkout' %}"><button class="btn-warning btn-block mt-3">Go To Checkout</button></a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+<div class="features-section row d-flex">
+    <div class="feature-item feature-free-shipping col-12 col-md-6">
+        <div class="feature-border"></div>
+        <img src="{% static 'images/free shiping icon.png '%}" alt="Free Shipping Icon">
+        <div>
+            <h3>Free Shipping</h3>
+            <p>Enjoy free shipping on all orders, with no minimum purchase required. Add your favorite 
+                items to the cart and we'll deliver them to your doorstep, hassle-free.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-valuable-gifts col-12 col-md-6 position-relative">
+        <div class="feature-border border-success"></div>
+        <img src="{% static 'images/valublegift2.png '%}" alt="Valuable Gifts Icon">
+        <div>
+            <h3>Valuable Gifts</h3>
+            <p>Find the perfect gifts for any occasion. Our curated selection includes premium 
+                products and exclusive bundles designed to delight and impress.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support col-12 col-md-6 ">
+        <div class="feature-border border-danger"></div>
+        <img src="{% static 'images/technical-support-64.png '%}" alt="All Day Support Icon">
+        <div>
+            <h3>All Day Support</h3>
+            <p> Our support team is available 24/7 to assist with any queries or concerns. 
+                Contact us anytime via chat, email, or phone for a seamless shopping experience.!</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support-dark col-12 col-md-6 position-relative">
+        <div class="feature-border border-warning"></div>
+        <img src="{% static 'images/trustedpartner.png '%}" alt="All Day Support Dark Icon">
+        <div>
+            <h3>Trusted Partner</h3>
+            <p>Shop with confidence, knowing we offer top-quality products from trusted brands. Our commitment to quality and 
+                customer satisfaction ensures a reliable shopping experience.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-quantity-container').forEach(container => {
+        const minusBtn = container.querySelector('.btn-quantity:first-child');
+        const plusBtn = container.querySelector('.btn-quantity:last-child');
+        const quantitySpan = container.querySelector('span');
+        const priceElement = container.closest('.store-item').querySelector('h5');
+        const basePrice = parseFloat(priceElement.textContent.replace('₹', ''));
+    
+        function updatePrice() {
+            const quantity = parseInt(quantitySpan.textContent);
+            const newPrice = (basePrice * quantity).toFixed(2);
+            priceElement.textContent = `₹${newPrice}`;
+            updateTotalAmount();
+        }
+    
+        minusBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantitySpan.textContent);
+            if (quantity > 1) {
+                quantitySpan.textContent = quantity - 1;
+                updatePrice();
+            }
+        });
+    
+        plusBtn.addEventListener('click', () => {
+            let quantity = parseInt(quantitySpan.textContent);
+            quantitySpan.textContent = quantity + 1;
+            updatePrice();
+        });
+    });
+    
+    function updateTotalAmount() {
+        const totalElement = document.querySelector('.p-total');
+        const itemPrices = Array.from(document.querySelectorAll('.store-item h5'))
+            .map(el => parseFloat(el.textContent.replace('₹', '')));
+        const total = itemPrices.reduce((sum, price) => sum + price, 0).toFixed(2);
+        totalElement.textContent = `₹${total}`;
+        document.querySelector('.card p-total ').textContent = `₹${total}`;
+    }
+    
+    // Initial total calculation
+    updateTotalAmount();
+    
+  
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.add-quantity, .sub-quantity').click(function(e) {
+        e.preventDefault();
+        var productId = $(this).data('product-id');
+        var isAdd = $(this).hasClass('add-quantity');
+        var url = isAdd ? "{% url 'add_quantity' 999999 %}" : "{% url 'sub_quantity' 999999 %}";
+        url = url.replace('999999', productId);
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#quantity-' + productId).text(response.new_quantity);
+                    // If item is removed (quantity became 0)
+                    if (response.item_removed) {
+                        $('#quantity-container-' + productId).closest('.cart-item').remove();
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text: "Minimum Quatity(1) Required",
+                          });
+                    }
+                } else {
+                    $('#quantity-' + productId).text(response.new_quantity);
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Out of Stock",
+                        text: "Try again Later..",
+                      });
+                }
+            },
+            error: function() {
+                $('#quantity-' + productId).text(response.new_quantity);
+                alert('Error communicating with the server');
+            }
+        });
+    });
+});
+</script>
+{% endblock user_content %}

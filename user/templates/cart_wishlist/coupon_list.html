@@ -1,0 +1,79 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+
+{% block title %}Available Coupons{% endblock title %}
+
+{% block user_content %}
+<div class="header-padding"></div>
+<div>
+    <div class="profile_body">
+        <div class="container-fluid">
+            <div class="row d-flex justify-content-end">
+                <!-- Sidebar -->
+                <div id="sidebar" class="col-md-3 col-lg-2 sidebar">
+                    <div class="sidebar-sticky">
+                        
+                        <ul class="nav flex-column">
+                            <li class="">
+                                <a class="nav-link text-danger" href="#">
+                                   <h5> Manage My Account</h5>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link " href="{% url 'user_profile' %}">My Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'order_details' %}">My Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'manage_addresses' %}">Address</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="{% url 'coupon_list' %}">Coupons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'wallet' %}">Wallet</a>
+                            </li>
+                            <li class="">
+                                <a class="nav-link text-danger" href="{% url "user_logout" %}">
+                                    <h5>Logout <i class="fas fa-sign-out-alt"></i></h5>
+                                </a>
+                            </li>
+                        </ul>
+                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarClose">Close</button>
+                    </div>
+                </div>
+ 
+                <!-- Main content -->
+                
+                <div  class="main col-md-8 col-lg-10">
+                    <div class="container bg-coupon ">
+                        <h1 class="text-center mb-4">Available Coupons</h1>
+                        <div class="row">
+                            {% for coupon in coupons %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card shadow-sm position-relative">
+                                    <div class=" coupon-card">
+                                        <img src="{% static 'images/Coupon-Page.png' %}">
+                                        <p class="card-title">{{ coupon.code }}<p>
+                                        <p class="card-discount">{{ coupon.discount|floatformat:"0" }}</p>
+                                        <p class="card-mfg">{{ coupon.valid_from|date:"M d, Y " }}</p>
+                                        <p class="card-expire">{{ coupon.valid_to|date:"M d, Y " }}</p>
+                                        {% if coupon.id in used_coupons %}
+                                        <button class="btn btn-danger" disabled>Used</button>
+                                        {% else %}
+                                        <button class="btn btn-success">Available</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock user_content %}

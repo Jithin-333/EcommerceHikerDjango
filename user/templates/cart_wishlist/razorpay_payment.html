@@ -1,0 +1,27 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Order Details{% endblock title %}
+
+{% block user_content %}
+<div class="header-padding"></div>
+<div class='text-center m-5'>
+    <h1>Complete Your Payment</h1>
+    <form action="{% url 'verify_payment' %}" method="POST">
+        {% csrf_token %}
+        <script src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="{{ razorpay_api_key }}"
+                data-amount="{{ total_amount|floatformat:2 }}"
+                data-currency="INR"
+                data-order_id="{{ razorpay_order_id }}"
+                data-buttontext="Pay with Razorpay"
+                data-name="Hiker E-commerce"
+                data-description="Test Transaction"
+                data-image="{% static 'images/Gemini_Generated_Image_beqnjgbeqnjgbeqn (1)-photoaidcom-cropped.jpg' %}"
+                data-prefill.name="{{ order.user.username }}"
+                data-prefill.email="{{ order.user.email }}"
+                data-theme.color="#F37254"></script>
+        <input type="hidden" value="Hidden Element" name="hidden">
+    </form>
+</div>
+
+{% endblock user_content%}

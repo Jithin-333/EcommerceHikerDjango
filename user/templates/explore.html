@@ -1,0 +1,250 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Product Detail{% endblock title %}
+
+{% block user_content %}
+
+
+<div class="breadcrumb_page d-flex justify-content-between">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb pt-3 ps-3">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Explore</li>
+        </ol>
+    </nav>
+    <button class=" btn-success m-1 mt-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Filter</button>
+
+</div>
+
+   
+<div>
+    <h1 class="m-5">Explore All Products</h1>
+</div>
+{% for message in messages %}
+    <div class="alert alert-box alert-yellow alert-dismissible fade show  mx-auto text-center" role="alert" id="alertBox">
+        <strong>{{message}}</strong> 
+        
+    </div>
+{% endfor %}
+<div class="ms-5">
+
+    <div class="container-fluid row justify-content-start ms-1">
+        {% for product in page_obj %}
+        <div class="product_card col-sm-10 col-md-4" data-aos="zoom-in" style="cursor: pointer;">
+            <div class="offer-banner">
+                <span class="badge bg-success">{{ product.get_discount_percentage }}% OFF</span>
+            </div>
+            <div class="add_to_wishlist" data-product-id="{{ product.id }}">
+                <i class="far fa-heart fa-2x {% if product in user.wishlist.items.all %}fas text-danger{% endif %}"></i>
+            </div>
+            <div onclick="location.href='{% url 'product_detail' product.id %}';">
+                <div class="image">
+                    {% if product.images.count > 0 %}
+                        <img src="{{ product.images.all.0.url }}" alt="{{ product.images.all.0.alt_text }}">
+                    {% endif %}
+                </div>
+                <div class="product_info">
+                    <h2 class="text-center">{{ product.name }}</h2>
+                    <h2 class="product_name">{{ product.short_description }}</h2>
+                    <p>{{ product.category.name }}</p>
+                    <div class="d-flex ">
+                        <div class="colors">
+                            <i class="fas fa-star gold-star"></i>
+
+                            <i class="fa fa-star gold-star"></i>
+                            <i class="fa fa-star gold-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <div>
+                            {% if product.stock == 0 %}
+                                <p class="colors ps-5 text-danger">Out of Stock</p>
+                            {% else %}
+                                <p class="colors ps-5">Only {{ product.stock }} left</p>
+                            {% endif %}
+
+                        </div>
+                        
+                    </div>
+                    <div class="price d-flex">
+                        <span class="_price">₹{{ product.calculated_offer_price|floatformat:"0" }}.00</span>
+                        <span class="ps-3 pt-1 text-decoration-line-through">₹{{product.price}}</span>
+                    </div>
+
+                    
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+
+
+{% comment %} FILTER CANVAS {% endcomment %}
+<div class="offcanvas offcanvas-end offcanvas-filter" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+  <div class="offcanvas-header">
+    <h5 id="offcanvasRightLabel">Apply Filters</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="filter-options mb-4">
+        <form method="get" action="{% url 'explore' %}">
+            <input type="hidden" name="page" value="{{ page_obj.number }}">
+    
+            <div class="row d-block">
+                <div class="col-md-12 my-3">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.name }}" {% if selected_category == cat.name %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-12 my-3">
+                    <input type="number" name="min_price" class="form-control" placeholder="Min Price" value="{{ selected_min_price }}">
+                </div>
+                <div class="col-md-12 my-3">
+                    <input type="number" name="max_price" class="form-control" placeholder="Max Price" value="{{ selected_max_price }}">
+                </div>
+                <div class="col-md-12 my-3">
+                    <select name="sort_by" class="form-select">
+                        <option value="default">Sort by</option>
+                        <option value="price_low_to_high" {% if sort_by == 'price_low_to_high' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high_to_low" {% if sort_by == 'price_high_to_low' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="new_arrivals" {% if sort_by == 'new_arrivals' %}selected{% endif %}>New Arrivals</option>
+                        <option value="a_to_z" {% if sort_by == 'a_to_z' %}selected{% endif %}>A-Z</option>
+                        <option value="z_to_a" {% if sort_by == 'z_to_a' %}selected{% endif %}>Z-A</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-12 d-flex justify-content-between">
+                    <button type="submit" class="px-3 btn btn-warning">Apply</button>
+                    <a href="{% url 'explore' %}" class="btn btn-secondary">Clear All</a>
+                </div>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+
+<nav aria-label="Page navigation example">
+    <div class="pagination justify-content-center m-3">
+        <span class="step-links page-item d-flex ">
+            {% if page_obj.has_previous %}
+                <a class="page-link" href="?page=1&{{ get_params }}">&laquo; first</a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ get_params }}">previous</a>
+            {% endif %}
+            
+            <span class="current page-link mx-3">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ get_params }}">next</a>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ get_params }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</nav>
+<div class="features-section row d-flex">
+    <div class="feature-item feature-free-shipping col-12 col-md-6">
+        <div class="feature-border"></div>
+        <img src="{% static 'images/free shiping icon.png '%}" alt="Free Shipping Icon">
+        <div>
+            <h3>Free Shipping</h3>
+            <p>Enjoy free shipping on all orders, with no minimum purchase required. Add your favorite 
+                items to the cart and we'll deliver them to your doorstep, hassle-free.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-valuable-gifts col-12 col-md-6 position-relative">
+        <div class="feature-border border-success"></div>
+        <img src="{% static 'images/valublegift2.png '%}" alt="Valuable Gifts Icon">
+        <div>
+            <h3>Valuable Gifts</h3>
+            <p>Find the perfect gifts for any occasion. Our curated selection includes premium 
+                products and exclusive bundles designed to delight and impress.</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support col-12 col-md-6 ">
+        <div class="feature-border border-danger"></div>
+        <img src="{% static 'images/technical-support-64.png '%}" alt="All Day Support Icon">
+        <div>
+            <h3>All Day Support</h3>
+            <p> Our support team is available 24/7 to assist with any queries or concerns. 
+                Contact us anytime via chat, email, or phone for a seamless shopping experience.!</p>
+        </div>
+    </div>
+    <div class="feature-item feature-all-day-support-dark col-12 col-md-6 position-relative">
+        <div class="feature-border border-warning"></div>
+        <img src="{% static 'images/trustedpartner.png '%}" alt="All Day Support Dark Icon">
+        <div>
+            <h3>Trusted Partner</h3>
+            <p>Shop with confidence, knowing we offer top-quality products from trusted brands. Our commitment to quality and 
+                customer satisfaction ensures a reliable shopping experience.</p>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    function toggleWishlist(productId, heartIcon) {
+        $.ajax({
+            url: '{% url "toggle_wishlist" %}',
+            type: 'POST',
+            data: {
+                'product_id': productId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                console.log('Success:', response);
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Wishlist Updated',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1600
+                    });
+                    if (response.in_wishlist) {
+                        heartIcon.removeClass('far').addClass('fas text-danger');
+                    } else {
+                        heartIcon.removeClass('fas text-danger').addClass('far');
+                    }
+                } else {
+                    console.error('Unexpected response:', response);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'An unexpected error occurred. Please try again.',
+                    });
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error:', textStatus, errorThrown);
+                console.log('Response:', jqXHR.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'An error occurred. Please try again.',
+                });
+            }
+        });
+    }
+
+    $('.add_to_wishlist').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var productId = $(this).data('product-id');
+        var heartIcon = $(this).find('i');
+        toggleWishlist(productId, heartIcon);
+    });
+});
+</script>
+{% endblock user_content %}

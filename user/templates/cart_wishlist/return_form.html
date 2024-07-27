@@ -1,0 +1,15 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Return Order{% endblock title %}
+
+{% block user_content %}
+<div class="header-padding"></div>
+<div class="container mt-5">
+    <h2 class="bg-warning rounded-pill">Return Order #{{ order.order_number }}</h2>
+    <form method="post" class="return-form p-3 ">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger">Submit Return Request</button>
+    </form>
+</div>
+{% endblock user_content %}

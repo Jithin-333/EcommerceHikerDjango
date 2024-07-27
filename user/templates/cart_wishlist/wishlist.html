@@ -1,0 +1,113 @@
+<!-- wishlist.html -->
+{% extends 'baseuser.html' %}
+{% load static %}
+
+{% block title %}Wishlist{% endblock title %}
+
+{% block user_content %}
+
+
+<div class="header-padding"></div>
+<h1>My Wishlist</h1>
+<div class="row justify-content-center">
+    {% for wishlist_item in wishlist_items %}
+    <div class="product_card col-sm-10 col-md-4" style="cursor: pointer;">
+        <div class="offer-banner">
+            <span class="badge bg-success">{{ wishlist_item.product.get_discount_percentage }}% OFF</span>
+        </div>
+        <div class="add_to_wishlist" data-product-id="{{ wishlist_item.product.id }}">
+            <i class="fas fa-heart fa-2x text-danger"></i>
+        </div>
+        <div onclick="location.href='{% url 'product_detail' wishlist_item.product.id %}';">
+            <!-- Rest of the product card content, similar to the product list template -->
+            <div class="image">
+                <img src="{{ wishlist_item.product.images.first.url }}" alt="{{ wishlist_item.product.name }}">
+            </div>
+            <div class="product_info">
+                <h2 class="text-center">{{ wishlist_item.product.name }}</h2>
+                <h2 class="product_name">{{ wishlist_item.product.short_description }}</h2>
+                <p>{{ wishlist_item.product.category.name }}</p>
+                <div class="d-flex ">
+                    <div class="colors">
+                        <i class="fas fa-star gold-star"></i>
+
+                        <i class="fa fa-star gold-star"></i>
+                        <i class="fa fa-star gold-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <div>
+                        {% if wishlist_item.product.stock == 0 %}
+                            <p class="colors ps-5 text-danger">Out of Stock</p>
+                        {% else %}
+                            <p class="colors ps-5">Only {{ wishlist_item.product.stock }} left</p>
+                        {% endif %}
+
+                    </div>
+                    
+                </div>
+                <div class="price d-flex">
+                    <span class="_price">₹{{ wishlist_item.product.offer_price|floatformat:"0" }}.00</span>
+                    <span class="ps-3 pt-1 text-decoration-line-through">₹{{wishlist_item.product.price}}</span>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>Your wishlist is empty.</p>
+    {% endfor %}
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function toggleWishlist(productId, heartIcon) {
+            $.ajax({
+                url: '{% url "toggle_wishlist" %}',
+                type: 'POST',
+                data: {
+                    'product_id': productId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Wishlist Updated',
+                            text: response.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        if (response.in_wishlist) {
+                            heartIcon.removeClass('far').addClass('fas text-danger');
+                        } else {
+                            heartIcon.removeClass('fas text-danger').addClass('far');
+                        }
+                        // Reload the page after successful toggle
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'An error occurred. Please try again.',
+                    });
+                }
+            });
+        }
+    
+        $('.add_to_wishlist').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var productId = $(this).data('product-id');
+            var heartIcon = $(this).find('i');
+            toggleWishlist(productId, heartIcon);
+        });
+    });
+</script>
+{% endblock user_content %}
+
+
+

@@ -1,0 +1,198 @@
+{% extends 'admin_base.html' %}
+{% block title %}Coupon list{% endblock title %}
+
+{% load static %}
+
+{% block admin_content %}
+
+  <div class='admin_content_search'>
+    <div class="container mt-1  mb-0">
+      <div class="banner_search">
+          <div class="text-white search_text">Coupon</div>
+          <a href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            <div class="text-white btn btn-outline-danger">Add Coupon +</div>
+          </a>
+          <div class="search-container">
+            <form action="{% url 'customer_search' %}" method="POST">{% csrf_token %}
+                <input type="text" placeholder="Search..." name="search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container coupon-cardss mt-5">
+    <div class="row">
+      {% for coupon in coupon %}
+      <div class="col-md-4">
+        <div class="card mb-4 shadow-sm coupon-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-start align-items-center mb-3">
+                    <img src="{% static 'images/Gemini_Generated_Image_beqnjgbeqnjgbeqn (1)-photoaidcom-cropped.jpg '%}" alt="">
+                    <h5 class="card-title mb-0 ps-2">Coupon Code: <strong>{{ coupon.code }}</strong></h5>
+                </div>
+                <p class="card-text"><i class="fas fa-tag"></i> Discount Price: {{ coupon.discount }}</p>
+                <p class="card-text"><i class="fas fa-calendar-alt"></i> Starting Date: {{ coupon.valid_from }}</p>
+                <p class="card-text"><i class="fas fa-calendar-times"></i> Expiry Date: {{ coupon.valid_to }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCouponModal-{{coupon.id}}">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-danger delete-coupon" data-coupon-id="{{ coupon.id }}">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </div>
+                    <small class="text-muted">{{ coupon.valid_to|date:"F-j-Y" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Modal for Adding Coupon -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Add New Coupon</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post" action="{% url 'add_coupon' %}">
+            {% csrf_token %}
+            <div class="form-group mt-2">
+              {{ form.code.label_tag }}
+              {{ form.code }}
+              {% if form.code.errors %}
+                <div class="alert alert-danger">{{ form.code.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="form-group mt-2">
+              <label for="{{ form.discount.id_for_label }}">Discount:</label>
+              {{ form.discount }}
+              {% if form.discount.errors %}
+                <div class="alert alert-danger">{{ form.discount.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="form-group d-flex row mt-2">
+              <div class='col-6'>
+                {{ form.valid_from.label_tag }}
+                {{ form.valid_from }}
+                {% if form.valid_from.errors %}
+                <div class="alert alert-danger">
+                    {{ form.valid_from.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-6">
+                {{ form.valid_to.label_tag }}
+                {{ form.valid_to }}
+                {% if form.valid_to.errors %}
+                <div class="alert alert-danger">
+                    {{ form.valid_to.errors }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="form-group form-check mt-2">
+              {{ form.active }}
+              <label class="form-check-label" for="{{ form.active.id_for_label }}">Active</label>
+              {% if form.active.errors %}
+                <div class="alert alert-danger">{{ form.active.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary">Add Coupon</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal for Editing Coupon -->
+<!-- Modal for Editing Coupon -->
+ {% for coupon in coupon %}
+ <div class="modal fade" id="editCouponModal-{{coupon.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+       </div>
+       <div class="modal-body">
+         <form method="post" action="{% url 'edit_coupon' coupon.id %}" id="editCouponForm-{{coupon.id}}">
+           {% csrf_token %}
+           {% for field in form %}
+             <div class="form-group mt-2">
+               {{ field.label_tag }}
+               {{ field }}
+               {% if field.errors %}
+                 <div class="alert alert-danger">
+                   {{ field.errors }}
+                 </div>
+               {% endif %}
+             </div>
+           {% endfor %}
+           <div class="d-flex justify-content-end mt-3">
+             <button type="submit" class="btn btn-primary">Save Changes</button>
+           </div>
+         </form>
+       </div>
+     </div>
+   </div>
+ </div>
+{% endfor %}
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-coupon');
+    
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const couponId = this.getAttribute('data-coupon-id');
+        
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You won't be able to revert this!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // If confirmed, redirect to the delete URL
+            window.location.href = `/delete-coupon/${couponId}/`;
+          }
+        });
+      });
+    });
+  });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for coupon in coupon %}
+        document.querySelector('[data-bs-target="#editCouponModal-{{coupon.id}}"]').addEventListener('click', function() {
+            var form = document.getElementById('editCouponForm-{{coupon.id}}');
+            form.code.value = '{{coupon.code}}';
+            form.discount.value = '{{coupon.discount}}';
+            form.valid_from.value = '{{coupon.valid_from|date:"Y-m-d\TH:i"}}';
+            form.valid_to.value = '{{coupon.valid_to|date:"Y-m-d\TH:i"}}';
+            form.active.checked = {% if coupon.active %}true{% else %}false{% endif %};
+        });
+        {% endfor %}
+    });
+    </script>
+    
+
+
+{% endblock admin_content %}

@@ -1,0 +1,430 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Comprehensive Sales Report{% endblock title %}
+
+{% block admin_content %}
+<div class="sales-report container mt-5">
+    <h1>Comprehensive Sales Report</h1>
+    <div class="row d-flex">
+    <!-- Report Type Selector -->
+        <form method="get" class="mb-3 col-4">
+            <div class="form-group">
+                <label for="report_type">Report Type:</label>
+                <select name="report_type" id="report_type" class="form-control" onchange="this.form.submit()">
+                    <option value="custom" {% if report_type == 'custom' %}selected{% endif %}>Custom</option>
+                    <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily</option>
+                    <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                    <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                    <option value="yearly" {% if report_type == 'yearly' %}selected{% endif %}>Yearly</option>
+                </select>
+            </div>
+        </form>
+        
+        <!-- Date Range Selector -->
+        <form method="post" class=" col-8 d-block">
+            {% csrf_token %}
+            <div class="form-row row d-flex">
+                <div class="form-group col-6">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group col-6">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+               
+            </div>
+            <div class="form-group col-md-6 d-flex justify-content-between text-end my-3">
+                <button type="submit" class="btn btn-primary  fas fa-chart-line"></button>
+                <button type="submit" name="download" class="btn btn-secondary  fas fa-file-csv"></button>
+                <button type="submit" name="download_pdf" class="btn btn-info fas fa-file-pdf"></button>
+            </div>
+        </form>
+    </div>
+    <!-- Summary Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Summary ({{ start_date }} to {{ end_date }})</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="stat-card animate-in">
+                        <i class="fas fa-dollar-sign icon text-primary"></i>
+                        <h3>Total Sales</h3>
+                        <p>${{ total_sales|floatformat:2 }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="stat-card animate-in">
+                        <i class="fas fa-shopping-cart icon text-success"></i>
+                        <h3>Number of Orders</h3>
+                        <p>{{ order_count }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="stat-card animate-in">
+                        <i class="fas fa-tags icon text-danger"></i>
+                        <h3>Total Discount</h3>
+                        <p>${{ total_discount|floatformat:2 }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="stat-card animate-in">
+                        <i class="fas fa-percentage icon text-warning"></i>
+                        <h3>Max Potential Discount</h3>
+                        <p>${{ total_max_potential_discount|floatformat:2 }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="stat-card animate-in">
+                        <i class="fas fa-ticket-alt icon text-info"></i>
+                        <h3>Coupon Usage</h3>
+                        <p>{{ coupon_usage }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="stat-card animate-in">
+                        <i class="fas fa-chart-line icon text-secondary"></i>
+                        <h3>Average Order Value</h3>
+                        <p>${{ avg_order_value|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Daily Sales Chart</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailySalesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card custom-card">
+                <div class="card-header custom-card-header">
+                    <h3><i class="fas fa-trophy mr-2"></i>Top 5 Selling Products</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="custom-list">
+                        {% for product in top_products %}
+                        <li class="custom-list-item">
+                            <span><span class="rank">#{{ forloop.counter }}</span>{{ product.product__name }}</span>
+                            <span class="custom-badge">{{ product.total_quantity }} units</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+       
+        <div class="col-md-6 mb-4">
+            <div class="card custom-card">
+                <div class="card-header custom-card-header">
+                    <h3><i class="fas fa-chart-pie mr-2"></i>Top 10 Selling Categories</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="custom-list">
+                        {% for category in top_categories %}
+                        <li class="custom-list-item">
+                            <span><span class="rank">#{{ forloop.counter }}</span>{{ category.name }}</span>
+                            <span class="custom-badge">{{ category.total_quantity }} units</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card custom-card">
+                <div class="card-header custom-card-header">
+                    <h3><i class="fas fa-users mr-2"></i>Top 5 Customers</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="custom-list">
+                        {% for customer in top_customers %}
+                        <li class="custom-list-item">
+                            <span><span class="rank">#{{ forloop.counter }}</span>{{ customer.email }}</span>
+                            <span class="custom-badge">${{ customer.total_spent|floatformat:2 }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class=" col-md-6 card border rounded">
+            <div class="card-header mt-3">
+                <h3>Payment Method Breakdown</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-stripedx">
+                    <thead>
+                        <tr>
+                            <th>Payment Method</th>
+                            <th>Count</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for method in payment_methods %}
+                        <tr>
+                            <td>{{ method.payment_method }}</td>
+                            <td>{{ method.count }}</td>
+                            <td>${{ method.total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Payment Methods Table -->
+   
+
+   
+<!-- Order Details -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Order Details</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Total Amount</th>
+                        <th>Payment Method</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Original Price</th>
+                        <th>Offer %</th>
+                        <th>Discount</th>
+                        <th>Final Price</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in detailed_items_page_obj %}
+                    <tr>
+                        <td>{{ item.order_number }}</td>
+                        <td>{{ item.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ item.user_email }}</td>
+                        <td>${{ item.total_amount|floatformat:2 }}</td>
+                        <td>{{ item.payment_method }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.original_price|floatformat:2 }}</td>
+                        <td>{{ item.offer_percentage }}%</td>
+                        <td>${{ item.discount_amount|floatformat:2 }}</td>
+                        <td>${{ item.discounted_price|floatformat:2 }}</td>
+                        <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+    <!-- Pagination -->
+    <!-- Detailed Orders Pagination -->
+    <!-- Pagination -->
+<nav aria-label="Detailed Order Items Page Navigation">
+    <ul class="pagination justify-content-center">
+        {% if detailed_items_page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?detailed_page=1">&laquo; first</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?detailed_page={{ detailed_items_page_obj.previous_page_number }}">previous</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link">
+                Page {{ detailed_items_page_obj.number }} of {{ detailed_items_page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if detailed_items_page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?detailed_page={{ detailed_items_page_obj.next_page_number }}">next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?detailed_page={{ detailed_items_page_obj.paginator.num_pages }}">last &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+    
+</div>
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',
+                title: '{{ message.tags|title }}',
+                text: '{{ message|safe }}',
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+<!-- JavaScript for Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Daily Sales Chart
+        var ctx = document.getElementById('dailySalesChart').getContext('2d');
+        var dailySalesData = {{ daily_sales|safe }};
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dailySalesData.map(item => item.date),
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: dailySalesData.map(item => item.daily_total),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                }, {
+                    label: 'Order Count',
+                    data: dailySalesData.map(item => item.order_count),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Sales Amount ($)'
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Order Count'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+<script>
+
+    function updateDateRange() {
+        const reportType = document.getElementById('report_type').value;
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        
+        const today = new Date();
+        let startDate, endDate;
+
+        if (reportType === 'daily') {
+            startDate = new Date(today);
+            endDate = new Date(today);
+        } else if (reportType === 'weekly') {
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() - today.getDay());
+            endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+        } else if (reportType === 'monthly') {
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        } else if (reportType === 'yearly') {
+            startDate = new Date(today.getFullYear(), 0, 1);
+            endDate = new Date(today.getFullYear(), 11, 31);
+        } else {
+            startDate = endDate = null;
+        }
+
+        if (startDate && endDate) {
+            startDateInput.value = startDate.toISOString().split('T')[0];
+            endDateInput.value = endDate.toISOString().split('T')[0];
+        } else {
+            startDateInput.value = '';
+            endDateInput.value = '';
+        }
+
+    } 
+    
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateDateRange()
+        window.location.href = url;
+
+    }); 
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.animate-in');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+    
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+    });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const listItems = document.querySelectorAll('.custom-list-item');
+            listItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(10px)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        });
+        </script>
+
+
+
+{% endblock admin_content %}

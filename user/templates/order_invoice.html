@@ -1,0 +1,95 @@
+<!-- templates/order_invoice.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .invoice-header, .invoice-details, .invoice-footer {
+            margin-bottom: 20px;
+        }
+        .invoice-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .text-end {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-header">
+        <div>
+            <p><strong>Order Id:</strong> {{ order.id }}</p>
+            <p><strong>Order Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
+            <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+        </div>
+        <div class="text-end">
+            <p><strong>Invoice Date:</strong> {{ order.updated_at|date:"d M Y" }}</p>
+            <p><strong>Invoice Number:</strong> {{ order.id }}</p>
+        </div>
+    </div>
+    <div class="invoice-details">
+        <div>
+            <h5>Billing Details</h5>
+            <p><strong>User:</strong> {{ order.user.username }}</p>
+            <p><strong>Phone:</strong> {{ order.shipping_address.phone }}</p>
+            <p><strong>Email:</strong> {{ order.user.email }}</p>
+        </div>
+        <div class="text-end">
+            <h5>Shipping Address</h5>
+            <p>{{ order.shipping_address.name }}</p>
+            <p>{{ order.shipping_address.apartment_address }}</p>
+            <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }}, {{ order.shipping_address.zip_code }}</p>
+            <p>{{ order.shipping_address.country }}</p>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₹{{ item.price|floatformat:"2" }}</td>
+                <td>₹{{ item.subtotal|floatformat:"2" }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="3" class="text-end"><strong>Total</strong></td>
+                <td>₹{{ order.total_amount|floatformat:"2" }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="invoice-footer">
+        <p>Thank you for your purchase!</p>
+        <p>If you have any questions about this invoice, please contact us at support@example.com.</p>
+    </div>
+</body>
+</html>

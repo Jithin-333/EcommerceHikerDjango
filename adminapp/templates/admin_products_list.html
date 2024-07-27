@@ -1,0 +1,98 @@
+{% extends 'admin_base.html' %}
+{% block title %}Product list{% endblock title %}
+
+{% block admin_content %}
+  <div class='admin_content_search'>
+    <div class="container mt-1  mb-0">
+      <div class="banner_search">
+          <div class="text-white search_text">Products</div>
+          <a href="{% url 'add_product' %}"><div class="text-white btn btn-outline-danger">Add Product +</div></a>
+          <div class="search-container ">
+            <form action="{% url 'customer_search' %}" method="POST">{% csrf_token %}
+                <input type="text" placeholder="Search..." name="search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="box  m-5">
+        <table class="table align-middle mb-0 table_bg py-5 text-dark">
+            <thead class='text-light'>
+                <tr class='text-dark text-center table_row_head'>
+                <th scope="col">ID</th>
+                <th scope="col">Product</th>
+                <th scope="col"> Price</th>
+                <th scope="col"> Stock</th>
+                <th scope="col">Category</th>
+                <th scope="col">Action</th>
+                </tr>
+            </thead>
+      
+          <!-- table-body-start -->
+          <tbody>
+            {% for product in products %}
+            <tr class="text-center">
+              <td scope="row">
+                <p class="text-dark mb-0">{{ product.index }}</p>
+              </td>
+      
+              <td scope="row">
+                  <p class="fw-bold text-dark mb-1">{{product.name}}</p>
+              </td>
+      
+              <td scope="row">
+                <p class="text-dark mb-0">{{product.price}}</p>
+              </td>
+
+              <td scope="row">
+                <p class="text-dark mb-0">{{product.stock}}</p>
+              </td>
+      
+              <td scope="row">
+                <p class="text-dark mb-0">{{ product.category }}</p>
+              </td>
+              
+              <td scope="row" class="d-flex justify-content-center">
+
+                <a class="pe-2" href="{% url 'edit_product' product.id %}"><button type="button" class="btn btn-warning block">Edit</button></a>
+            
+                <form action="{% url 'product_toggle_block' product.id %}" method="POST" >
+                  {% csrf_token %}
+                  {% if product.is_active %}
+                      <button type="submit" class="btn btn-danger block">Block</button>
+                  {% else %}
+                      <button type="submit" class="btn btn-success">Unblock</button>
+                  {% endif %}
+                </form>
+               
+              </td>
+              
+            </tr>
+            {% endfor %}
+      
+          </tbody>
+        </table>
+      
+      </div>
+  </div>
+
+  {% if messages %}
+  <script>
+      {% for message in messages %}
+          Swal.fire({
+              icon: '{{ message.tags }}',
+              title: '{{ message.tags|title }}',
+              text: '{{ message|safe }}',
+          });
+      {% endfor %}
+  </script>
+  {% endif %}
+
+{% comment %} ------MODAL FOR ADDING PRODUCT -------{% endcomment %}
+
+  
+
+{% endblock admin_content %}

@@ -1,0 +1,60 @@
+{% extends 'admin_base.html' %}
+
+
+{% block title %}Return Manage{% endblock title %}
+{% block admin_content %}
+
+
+<div class="container-fluid">
+    <h2>Manage Return Requests</h2>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>Product</th>
+                <th>User</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Requested At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for return_request in return_requests %}
+            <tr>
+                <td>{{ return_request.order_item.order_number }}</td>
+                <td>{{ return_request.order_item.product.name }}</td>
+                <td>{{ return_request.user.username }}</td>
+                <td>{{ return_request.get_reason_display }}</td>
+                <td>{{ return_request.get_status_display }}</td>
+                <td>{{ return_request.requested_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% if return_request.status == 'pending' %}
+                    <form method="post" action="{% url 'return_action' return_request.id %}">
+                        {% csrf_token %}
+                        <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                    {% else %}
+                    {{ return_request.get_status_display }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',
+                title: '{{ message.tags|title }}',
+                text: '{{ message|safe }}',
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+{% endblock admin_content %}

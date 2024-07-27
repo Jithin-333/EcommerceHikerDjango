@@ -1,0 +1,160 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Edit Address{% endblock title %}
+
+{% block user_content %}
+<div class="header-padding"></div>
+<div class="container mt-4 mb-3 edit-address">
+    <form method="post" class="needs-validation text-start" novalidate>
+        <div class="heading py-3 ps-3"><h2>Edit Address</h2></div>
+        {% csrf_token %}
+
+        <div class="row justify-content-center">
+            <div class="form-group col-md-6 col-12 ps-4">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                <div class="invalid-feedback" id="phoneError">
+                    Please provide a valid 10-digit phone number.
+                </div>
+            </div>
+            <div class="form-group col-6 pe-4">
+                {{ form.address_type.label_tag }}
+                {{ form.address_type }}
+                <div class="invalid-feedback">
+                    Please provide a valid address type.
+                </div>
+            </div>
+        </div>
+        <div class=" row d-flex justify-content-between">
+            <div class="form-group col-6 ps-4">
+                {{ form.phone.label_tag }}
+                {{ form.phone }}
+                <div class="invalid-feedback">
+                    Please provide a valid country.
+                </div>
+            </div>
+            <div class="form-group col-6 pe-4">
+                {{ form.phone_alternate.label_tag }}
+                {{ form.phone_alternate }}
+               
+                <div class="invalid-feedback" id="phoneAlternateError">
+                    Please provide a valid 10-digit phone number.
+                </div>
+            </div>
+        </div>
+        <div class=" row d-flex justify-content-between">
+            <div class="form-group col-6 ps-4">
+                {{ form.city.label_tag }}
+                {{ form.city }}
+                <div class="invalid-feedback">
+                    Please provide a valid city.
+                </div>
+            </div>
+            <div class="form-group col-6 pe-4">
+                {{ form.state.label_tag }}
+                {{ form.state }}
+                <div class="invalid-feedback">
+                    Please provide a valid state.
+                </div>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-between">
+            <div class="form-group col-6 ps-4">
+                {{ form.country.label_tag }}
+                {{ form.country }}
+                <div class="invalid-feedback">
+                    Please provide a valid country.
+                </div>
+            </div>
+        
+            <div class="form-group col-6 pe-4">
+                {{ form.zip_code.label_tag }}
+                {{ form.zip_code }}
+                <div class="invalid-feedback" id="zipCodeError">
+                    Please provide a valid zip code.
+                </div>
+            </div>
+        </div>
+        <div class="form-group px-3">
+            {{ form.apartment_address.label_tag }}
+            {{ form.apartment_address }}
+            <div class="invalid-feedback">
+                Please provide a valid apartment address.
+            </div>
+        </div>
+        <div class="d-flex justify-content-between p-3">
+            <button type="submit" class=" btn-success">Update Address</button>
+            <a href="{% url 'manage_addresses' %}"><button class="btn-danger">Cancel</a>
+        </div>
+    </form>
+</div>
+
+  
+ 
+
+<script>
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+            // Custom validation for phone numbers and zip code
+            var phoneInput = document.getElementById('{{ form.phone.id_for_label }}');
+            var phoneAlternateInput = document.getElementById('{{ form.phone_alternate.id_for_label }}');
+            var zipCodeInput = document.getElementById('{{ form.zip_code.id_for_label }}');
+
+            function validatePhoneNumber(input, errorElement) {
+                var phoneRegex = /^\d{10}$/;
+                if (!phoneRegex.test(input.value)) {
+                    input.setCustomValidity("Invalid phone number");
+                    errorElement.textContent = "Please enter a valid 10-digit phone number.";
+                } else {
+                    input.setCustomValidity("");
+                }
+            }
+
+            function validateZipCode(input) {
+                var zipCodeRegex = /^\d{6}$/;
+                if (!zipCodeRegex.test(input.value)) {
+                    input.setCustomValidity("Invalid zip code");
+                    document.getElementById('zipCodeError').textContent = "Please enter a valid  zip code.";
+                } else {
+                    input.setCustomValidity("");
+                }
+            }
+
+            phoneInput.addEventListener('input', function() {
+                validatePhoneNumber(this, document.getElementById('phoneError'));
+            });
+
+            phoneAlternateInput.addEventListener('input', function() {
+                validatePhoneNumber(this, document.getElementById('phoneAlternateError'));
+            });
+
+            zipCodeInput.addEventListener('input', function() {
+                validateZipCode(this);
+            });
+
+            // Prevent non-numeric input for phone and zip code fields
+            function preventNonNumericInput(event) {
+                if (event.which < 48 || event.which > 57) {
+                    event.preventDefault();
+                }
+            }
+
+            phoneInput.addEventListener('keypress', preventNonNumericInput);
+            phoneAlternateInput.addEventListener('keypress', preventNonNumericInput);
+            zipCodeInput.addEventListener('keypress', preventNonNumericInput);
+        }, false);
+    })();
+</script>
+{% endblock user_content %}

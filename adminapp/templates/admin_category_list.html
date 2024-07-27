@@ -1,0 +1,216 @@
+{% extends 'admin_base.html' %}
+{% block title %}Category{% endblock title %}
+{% block admin_content %}
+
+
+  <div class='admin_content_search'>
+    <div class="container mt-1  mb-0 ">
+      <div class="banner_search">
+          <div class="text-white search_text">Category</div>
+          <div class="text-white btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Add Category +</div>
+          <div class="search-container ">
+            <form action="{% url 'category_search' %}" method="POST">{% csrf_token %}
+                <input type="text" placeholder="Search..." name="search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+          </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class='category-table'>
+    <div class="box m-5">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 table_bg py-5 text-dark">
+          <thead class='text-light'>
+            <tr class='text-dark table_row_head'>
+              <th scope="col">ID</th>
+              <th scope="col">Category</th>
+              <th scope="col">Added</th>
+              <th scope="col">Updated</th>
+              <th scope="col">Offer</th>
+              <th scope="col" class="ps-5">Action</th>
+            </tr>
+          </thead>      
+          <!-- table-body-start -->
+          <tbody>
+            {% for category in categories %}
+            <tr>
+              <td data-label="ID">
+                <p class="text-dark mb-0">{{ category.id }}</p>
+              </td>
+      
+              <td data-label="Category">
+                <p class="fw-bold text-dark mb-1">{{category.name}}</p>
+              </td>
+      
+              <td data-label="Added">
+                <p class="text-dark mb-0">{{category.added_date|date:"Y-m-d"}}</p>
+              </td>
+    
+              <td data-label="Updated">
+                <p class="text-dark mb-0">{{category.updated_date|date:"Y-m-d"}}</p>
+              </td>
+    
+              <td data-label="Offer">
+                {% with offer=category.categoryoffer_set.first %}
+                  {% if offer %}
+                    <p class="text-dark mb-0">{{offer.discount_percentage}}%</p>
+                  {% else %}
+                    <p class="text-dark mb-0">No offer</p>
+                  {% endif %}
+                {% endwith %}
+              </td>
+              
+              <td data-label="Action">
+                <div class="d-flex flex-wrap gap-2">
+                  <button type="submit" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#edit_button_category-{{forloop.counter}}">
+                    <i class="fas fa-edit"></i> Edit</button>
+                  <form action="{% url 'category_toggle_block' category.id %}" method="POST">
+                    {% csrf_token %}
+                    {% if category.is_active %}
+                      <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-success btn-sm">Unblock</button>
+                    {% endif %}
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+  {% comment %}----------- modal for adding CATEGORY --------------{% endcomment %}
+
+  <div class="modal fade add_modal_product" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-5">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Add To Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="{% url 'add_category' %}" method="POST" onsubmit="return validateForm(this)"> {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3"> 
+              <input type="text" class="form-control" name="category" placeholder="Category Name"  pattern="^[A-Za-z]+$">
+            </div>
+            <div class="mb-3"> 
+              <input type="number" class="form-control" name="discount_percentage" placeholder="Discount Percentage"  min="0" max="100">
+            </div>
+            <div class="mb-3"> 
+              <input type="text" class="form-control" name="discount_name" placeholder="Discount Name">
+            </div>
+            <div class="mb-3"> 
+              <input type="date" class="form-control" name="start_date">
+            </div>
+            <div class="mb-3"> 
+              <input type="date" class="form-control" name="end_date">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn add-product-btn">Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% comment %}----------- modal for EDITING CATEGORY --------------{% endcomment %}
+
+  {% for category in categories %}
+    <div class="modal fade add_modal_product" id="edit_button_category-{{forloop.counter}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-5">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Edit Category</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form action="{% url 'edit_category' category.id %}" method="POST" onsubmit="return validateForm(this)"> {% csrf_token %}
+            <div class="modal-body">
+              <div class="form-group pb-4">
+                <label for="name" class="pb-2">Category Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ category.name }}" required>
+              </div>
+              {% with offer=category.categoryoffer_set.first %}
+                <div class="form-group pb-4">
+                  <label for="discount_percentage" class="pb-2">Discount Percentage</label>
+                  <input type="number" class="form-control" id="discount_percentage" name="discount_percentage" value="{{ offer.discount_percentage|default:'' }}">
+                </div>
+                <div class="form-group pb-4">
+                  <label for="discount_name" class="pb-2">Discount Name</label>
+                  <input type="text" class="form-control" id="discount_name" name="discount_name" value="{{ offer.discount_name|default:'' }}">
+                </div>
+                <div class="form-group pb-4">
+                  <label for="start_date" class="pb-2">Start Date</label>
+                  <input type="date" class="form-control" id="start_date" name="start_date" value="{{ offer.start_date|date:'Y-m-d'|default:'' }}">
+                </div>
+                <div class="form-group pb-4">
+                  <label for="end_date" class="pb-2">End Date</label>
+                  <input type="date" class="form-control" id="end_date" name="end_date" value="{{ offer.end_date|date:'Y-m-d'|default:'' }}">
+                </div>
+              {% endwith %}
+            </div>
+            <div class="modal-footer pt-5">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn add-product-btn">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  
+<!-- ~~~~~~~~~SHOWING MESSAGES~~~~~~~~-->
+
+  {% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',
+                title: '{{ message.tags|title }}',
+                text: '{{ message|safe }}',
+            });
+        {% endfor %}
+    </script>
+  {% endif %}
+
+  <script>
+    function validateForm(form) {
+      var categoryName = form.querySelector('input[name="category"], input[name="name"]').value;
+      var discountPercentage = form.querySelector('input[name="discount_percentage"]').value;
+    
+      // Validate category name (only letters, no spaces)
+      if (!/^[A-Za-z]+$/.test(categoryName)) {
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'OOPs..',
+          text: 'Category name should contain only letters, no spaces or special characters.',
+        });
+        return false;
+      }
+    
+      // Validate discount percentage (non-negative)
+      if (discountPercentage !== "" && parseFloat(discountPercentage) < 0) {
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'OOPs..',
+          text: 'Discount percentage cannot be negative.',
+        });
+        return false;
+      }
+    
+      return true;
+    }
+    </script>
+
+
+{% endblock admin_content %}

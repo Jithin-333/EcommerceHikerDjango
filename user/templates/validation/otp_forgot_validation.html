@@ -1,0 +1,142 @@
+{% extends 'baseuser.html' %}
+{% load static%}
+
+ 
+
+{% block title %}otp verificationR{% endblock title %}
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
+
+{% block user_content %}
+<div class="header-padding"></div>
+    
+<div class="body_bg_signup">
+    <div class="signup-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show  mx-auto" role="alert" id="alertBox">
+                <strong>{{message}}</strong> 
+                
+            </div>
+        {% endfor %}
+        <div class="container">
+            <h2>OTP Validation</h2>
+
+            <form method="POST" action="{% url 'password_otp_validate' %}" id="otpForm" >
+                {% csrf_token %}
+                <input type="hidden" name="email" value="{{ email }}">
+                <div class="otp-wrapper ">
+                    <input type="text" name="otp1" class="otp-input text-[32px] text-center form-input" placeholder="0">
+                    <input type="text" name="otp2" class="otp-input text-[32px] text-center form-input" placeholder="0">
+                    <input type="text" name="otp3" class="otp-input text-[32px] text-center form-input" placeholder="0">
+                    <input type="text" name="otp4" class="otp-input text-[32px] text-center form-input" placeholder="0">
+                </div>
+                <button type="submit">Validate</button>
+            </form>
+            <div class="text-center pt-3">
+                <span id="timer"></span>
+            </div>
+        </div>
+
+        <div id="resendOtp" class="resend text-center pt-3">
+            <form method="POST" action="{% url 'resend_otp' %}">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="{{ email }}">
+                <button type="submit" id="resendButton" class="btn btn-success">Resend OTP</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Wait for the DOM to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+        // Set a timeout to remove the alert box after 5 seconds (5000 milliseconds)
+        setTimeout(function() {
+            var alertBox = document.getElementById("alertBox");
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s ease";
+                alertBox.style.opacity = "0";
+                setTimeout(function() {
+                    alertBox.remove();
+                }, 500);  // Wait for the transition to complete before removing the element
+            }
+        }, 5000);
+    });
+</script>
+<script>
+    // JavaScript code for OTP timer
+    const otpForm = document.getElementById('otpForm');
+    const resendOtp = document.getElementById('resendOtp');
+    const timerDisplay = document.getElementById('timer');
+
+
+    let timeLeft = 30;
+    const timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            otpForm.classList.add('hidden');
+            resendOtp.classList.remove('hidden');
+        } else {
+            timerDisplay.innerText = `Time left: ${timeLeft} seconds`;
+            timeLeft--;
+        }
+    }, 1000);
+
+
+</script>
+<script>
+    document.querySelectorAll('.otp-input').forEach((element, index, array) => {
+        element.addEventListener('input', function (event) {
+            let inputValue = event.target.value;
+            inputValue = inputValue.replace(/[^0-9]/g, '');
+            inputValue = inputValue.slice(0, 1);
+            event.target.value = inputValue;
+
+            if (inputValue !== '') {
+                // Move focus to the next input field
+                if (index < array.length - 1) {
+                    array[index + 1].focus();
+                }
+            } else {
+                // Move focus to the previous input field
+                if (index > 0) {
+                    array[index - 1].focus();
+                }
+            }
+        });
+
+        // Add a blur event listener to handle cases where the user clicks or tabs away
+        element.addEventListener('blur', function () {
+            // If the input is empty, move focus to the previous input field
+            if (element.value === '' && index > 0) {
+                array[index - 1].focus();
+            }
+        });
+    });
+
+    document.getElementById('otpForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const inputs = document.querySelectorAll('.otp-wrapper input');
+        let otp = '';
+        inputs.forEach(input => otp += input.value);
+        if (/^\d{4}$/.test(otp)) {
+            const otpField = document.createElement('input');
+            otpField.type = 'hidden';
+            otpField.name = 'otp';
+            otpField.value = otp;
+            this.appendChild(otpField);
+            this.submit();
+        } else {
+            Swal.fire({
+                title: "Please Enter the OTP",
+                
+                icon: "info"
+              });
+        }
+    });
+</script>
+{% endblock user_content %}

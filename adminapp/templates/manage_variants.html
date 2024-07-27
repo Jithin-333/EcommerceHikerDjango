@@ -1,0 +1,75 @@
+{% extends 'admin_base.html' %}
+{% block title %}Manage Variant{% endblock title %}
+
+
+{% block admin_content %}
+
+  
+<h1 class="mb-4 variant-heading">Manage Variants and Options</h1>
+<div class="container manage_variant">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="alert {{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div>
+        
+        <div class="d-flex justify-content-between">
+            <h2>Existing Variants</h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Add Variant</button>
+        </div>
+        {% for variant in variants %}
+        <div class="variant-section">
+            <h3>{{ variant.name }}</h3>
+            <div class="d-flex justify-content-between">
+                <ul class="variant-options">
+                    {% for option in variant.options.all %}
+                    <li>{{ option.value }}</li>
+                    {% endfor %}
+                </ul>
+                <form method="post" class="form-inline text-center">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_option">
+                    <input type="hidden" name="variant_id" value="{{ variant.id }}">
+                    <input type="text" name="option_value" class="form-control mr-2" placeholder="New Option Value" required>
+                    <button type="submit" class=" btn-success mt-3">Add Option</button>
+                </form>
+            </div>
+        </div>
+        <hr>
+        {% endfor %}
+    </div>
+</div>
+
+
+  {% comment %} modal for adding variant {% endcomment %}
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="variant-section">
+                <h2>Add New Variant</h2>
+                <form method="post" class="form-inline mb-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_variant">
+                    <input type="text" name="variant_name" class="form-control mr-2" placeholder="Variant Name" required>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Add Variant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+       
+      </div>
+    </div>
+  </div>
+{% endblock admin_content %}

@@ -1,0 +1,292 @@
+{% extends 'baseuser.html' %}
+{% load static %}
+{% block title %}Order Details{% endblock title %}
+
+
+{% block user_content %}
+<div class="header-padding"></div>
+
+<div>
+    <div class="profile_body">
+       
+        <div class="container-fluid">
+            <div class="row d-flex justify-content-end">
+                <!-- Sidebar -->
+                <div id="sidebar" class="col-md-3 col-lg-2 sidebar">
+                    <div class="sidebar-sticky">
+                        
+                        <ul class="nav flex-column">
+                            <li class="">
+                                <a class="nav-link text-danger" href="#">
+                                   <h5> Manage My Account</h5>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link " href="{% url 'user_profile' %}">My Profile</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="{% url 'order_details' %}">My Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'manage_addresses' %}">Address</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'coupon_list' %}">Coupons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'wallet' %}">Wallet</a>
+                            </li>
+                            <li class="">
+                                <a class="nav-link text-danger" href="{% url "user_logout" %}">
+                                    <h5>Logout <i class="fas fa-sign-out-alt"></i></h5>
+                                </a>
+                            </li>
+                        </ul>
+                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarClose">Close</button>
+                    </div>
+                </div>
+
+
+                <div class="main col-md-8 col-lg-10 mb-3 order-detail">
+                    <div class="card-header bg-head d-flex justify-content-between mb-2">
+                        <h2 class="mb-0">Order Details</h2>
+                        <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggle">Menu</button>
+                    </div>
+                    {% for order in orders %}
+                    {% for item in order.items.all %}
+                    <div class="card shadow-sm mb-5">
+                        <div class="card-body order-detail">
+                            <div class="row align-items-center">
+                                <div class="col-6 col-md-2 text-center mb-3 mb-md-0">
+                                    <img src="{{ item.product.images.first.url }}" alt="{{ item.product.name }}" class="img-fluid img-detail rounded" style="max-width: 150px;">
+                                    <p class="product-name text-muted mt-2">{{ item.product.name }}</p>
+                                </div>
+                                
+                                <div class="col-6 col-md-3 text-center mb-3 mb-md-0">
+                                    <h6 class="text-muted">Order Information</h6>
+                                    <p><strong>Order ID:</strong> {{ item.order_number }}</p>
+                                    <p>Quantity: {{item.quantity}}</p>
+                                    
+                                </div>
+                                
+                                <div class="col-6 col-md-3 text-center mb-3 mb-md-0">
+                                    <h6 class="text-muted">Order Status</h6>
+                                    <p class="">
+                                        <span class="badge {% if item.status == 'DELIVERED' %}bg-success text-light
+                                        {% elif item.status == 'PROCESSING' %}bg-warning text-danger
+                                        {% elif item.status == 'SHIPPED' %}bg-ship text-danger
+                                        {% elif item.status == 'CANCELLED' %}bg-danger
+                                        {% elif item.status == 'RETURNED' %}bg-danger text-light
+                                        {% else %}bg-info text-danger
+                                        {% endif %} p-2">
+                                            {{ item.get_status_display  }}
+                                        </span>
+                                    </p>
+                                    <p>{{item.payment_status}}</p>
+                                </div>
+                                <div class="col-6 col-md-3 text-center mb-3 mb-md-0">
+                                
+                                    <h6 class="text-muted">Payment & Total</h6>
+                                    <p><strong>Total Amount:</strong> ₹{{ order.total_amount }}</p>
+                                    <p><strong>Payment Method:</strong> 
+                                        {% if order.payment_method == 'PAID' %}
+                                            <span class="text-success">{{ order.get_payment_method_display }} (RazorPay)</span>
+                                        {% else %}
+                                            {{ order.get_payment_method_display }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-12 col-md-1 text-center">
+                                    <button class="btn btn-warning button-info" data-bs-toggle="modal" data-bs-target="#OrderInfo-{{item.id}}">
+                                        <i class="fas fa-info-circle ico"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        
+                            <div class="row mt-3 justify-content-between">
+                                <div class="col-auto">
+                                    <span class="text-muted">{{ order.created_at|date:"d M Y" }}</span>
+                                </div>
+                            
+                                <div class="col-auto">
+
+                                    {% if item.status == 'DELIVERED' %}
+                                    <a href="{% url 'order_return' order.id item.id %}" class="btn btn-danger">Return</a>
+                                {% elif item.status == 'PENDING' or order.status == 'PROCESSING' %}
+                                    <form class="cancelOrderForm" method="post" action="{% url 'cancel_order' order.id item.id %}">
+                                        {% csrf_token %}
+                                        <button type="button" class="cancelOrderButton btn btn-danger">Cancel Order</button>
+                                    </form>
+                                {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                    <div class="pagination-container d-flex justify-content-center">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                {% if orders.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1" aria-label="First">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.previous_page_number }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                    
+                                {% for num in orders.paginator.page_range %}
+                                    {% if orders.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                    
+                                {% if orders.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.next_page_number }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ orders.paginator.num_pages }}" aria-label="Last">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+</div>
+
+    <!-- Modal for info -->
+    {% for order in orders %}
+    {% for item in order.items.all%}
+    <div class="modal fade" id="OrderInfo-{{item.id}}" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-info-order">
+                <div class="modal-header">
+                    <h3 class="modal-title invoice-title" id="staticBackdropLabel">Order Details</h3>
+                    <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row invoice-header">
+                        <div class="col-6">
+                            <p><strong>Order Id:</strong> {{ item.order_number  }}</p>
+                            <p><strong>Order Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
+                            <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>Invoice Date:</strong> {{ order.updated_at|date:"d M Y" }}</p>
+                            <p><strong>Invoice Number:</strong> {{ order.id }}</p>
+                        </div>
+                    </div>
+                    <div class="row invoice-details">
+                        <div class="col-6">
+                            <h5>Billing Details</h5>
+                            <p><strong>User:</strong> {{ order.user.username }}</p>
+                            <p><strong>Phone:</strong> {{ order.shipping_address.phone }}</p>
+                            <p><strong>Email:</strong> {{ order.user.email }}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h5>Shipping Address</h5>
+                            <p>{{ order.shipping_address.name }}</p>
+                            <p>{{ order.shipping_address.apartment_address }}</p>
+                            <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }}, {{ order.shipping_address.zip_code }}</p>
+                            <p>{{ order.shipping_address.country }}</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-head">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>₹{{ order.price|floatformat:"2" }}</td>
+                                    <td>₹{{ item.subtotal|floatformat:"2" }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total</strong></td>
+                                    <td>₹{{ item.subtotal|floatformat:"2" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end">
+                        <a href="{% url 'generate_pdf_function' order.id item.id %}" class="btn btn-info fas fa-file-pdf"></a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endfor %}
+    
+    {% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: '{{ message.tags }}',
+                title: '{{ message.tags|title }}',
+                text: '{{ message|safe }}',
+            });
+        {% endfor %}
+    </script>
+    {% endif %}
+<script>
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('d-block');
+    });
+
+    document.getElementById('sidebarClose').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('d-block');
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cancelButtons = document.querySelectorAll('.cancelOrderButton');
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const form = this.closest('.cancelOrderForm');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you really want to cancel this order?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, cancel it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+    </script>
+{% endblock user_content %}
