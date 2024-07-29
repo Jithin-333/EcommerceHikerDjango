@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'chartjs',
     'storages',
     'whitenoise.runserver_nostatic',
-   
 ]
 
 
@@ -198,7 +197,7 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
-LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/'
+LOGIN_REDIRECT_URL = 'https://hikercart.shop'
 
 SOCIALACCOUNT_ADAPTER = 'adminapp.adapters.CustomSocialAccountAdapter'
 
