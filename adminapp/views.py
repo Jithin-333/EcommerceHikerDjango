@@ -196,6 +196,19 @@ def add_product(request):
             for image_file in request.FILES.getlist('images'):
                 image = Image.objects.create(image=image_file)
                 product.images.add(image)
+                
+            if discount_percentage:
+                discount_percentage = int(discount_percentage)
+                if product.offer_set.exists():
+                    offer = product.offer_set.first()
+                    offer.discount_percentage = discount_percentage
+                    offer.save()
+                else:
+                    offer = Offer.objects.create(
+                        product=product,
+                        discount_percentage=discount_percentage
+                    )
+                    product.offer_set.add(offer)
 
             return JsonResponse({'status': 'success', 'message': 'Product added successfully!'})
         except Exception as e:
