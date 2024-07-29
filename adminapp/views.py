@@ -71,22 +71,35 @@ def admin_login_view(request):
 
 
 def admin_login(request):
-    if request.method == "POST":
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+    try:
+        if request.method == "POST":
+            email = request.POST.get('email')
+            password = request.POST.get('password')
 
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            login(request, user)
-            if user.is_staff:
-                return redirect(admin_login_view)
-            else:
-                error_message = "You do not have permission to access the admin site."
+            if not email or not password:
+                error_message = "Both email and password are required."
                 return render(request, 'adminlogin.html', {'error_message': error_message})
-    else:
-        error_message = "Invalid credentials."
+            
+
+            User = get_user_model()
+
+
+            user = authenticate(request, email=email, password=password)
+            if user is not None:
+                login(request, user)
+                if user.is_staff:
+                    return redirect(admin_login_view)
+                else:
+                    error_message = "You do not have permission to access the admin site."
+                    return render(request, 'adminlogin.html', {'error_message': error_message})
+        else:
+            error_message = "Invalid credentials."
+            return render(request, 'adminlogin.html', {'error_message': error_message})
+    except:
+        error_message = "Invalid email or password Try again"
         return render(request, 'adminlogin.html', {'error_message': error_message})
-    
+
+        
 @never_cache
 def admin_logout(request):
     if request.user.is_authenticated:
@@ -196,7 +209,7 @@ def add_product(request):
             for image_file in request.FILES.getlist('images'):
                 image = Image.objects.create(image=image_file)
                 product.images.add(image)
-                
+
             if discount_percentage:
                 discount_percentage = int(discount_percentage)
                 if product.offer_set.exists():
