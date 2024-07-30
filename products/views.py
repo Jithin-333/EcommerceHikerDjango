@@ -123,7 +123,7 @@ def sub_quantity(request,product_id):
 from .models import CheckoutAddress
 from .forms import CheckoutAddressForm
 
-@login_required
+@login_required(login_url='user_login')
 def manage_addresses(request):
     user=request.user
     user_addresses = CheckoutAddress.objects.filter(user=user).order_by('created_at')
@@ -157,14 +157,14 @@ def edit_address(request, address_id):
         form = CheckoutAddressForm(instance=address)
     return render(request, 'profile/edit_address.html', {'form': form, 'address': address})
 
-@login_required
+@login_required(login_url='user_login')
 def delete_address(request, address_id):
     address = get_object_or_404(CheckoutAddress, id=address_id, user=request.user)
     address.delete()
     messages.success(request, "Address deleted successfully.")
     return redirect('manage_addresses')
 
-@login_required(login_url="login")
+@login_required(login_url='user_login')
 def set_default_address(request, address_id, address_type):
     address = get_object_or_404(CheckoutAddress, id=address_id, user=request.user)
     address.default = not address.default
@@ -175,7 +175,7 @@ def set_default_address(request, address_id, address_type):
 
 #------------CHECKOUTPAGE---------##
 
-@login_required(login_url="login")
+@login_required(login_url='user_login')
 def checkout(request):
     try:
         user=request.user
@@ -251,7 +251,7 @@ def calculate_order_total(cart_items, coupon=None):
         total_amount -= Decimal(coupon.discount)
     return max(total_amount, Decimal('0'))
 
-@login_required
+@login_required(login_url='user_login')
 @require_POST
 def place_order(request):
     user = request.user
@@ -577,7 +577,7 @@ def verify_payment(request):
 
 
 
-
+@login_required(login_url='user_login')
 def order_details(request):
     orders_list = Order.objects.filter(user=request.user).order_by('-created_at')
     paginator = Paginator(orders_list, 6)  # Show 10 orders per page.
@@ -586,7 +586,7 @@ def order_details(request):
     return render(request, 'cart_wishlist/order_details.html', {'orders': orders})
 
 
-@login_required
+@login_required(login_url='user_login')
 def order_return(request, order_id, item_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     orderitem = OrderItem.objects.get(id=item_id)
@@ -641,7 +641,7 @@ def order_return(request, order_id, item_id):
 
 
 
-@login_required
+@login_required(login_url='user_login')
 def cancel_order(request, order_id,item_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     orderitem=OrderItem.objects.get(id=item_id)
@@ -692,13 +692,13 @@ def cancel_order(request, order_id,item_id):
     return redirect(reverse('order_details'))
 
 # WISHLIST PRODUCT VIEWS
-@login_required(login_url='login')
+@login_required(login_url='user_login')
 def wishlist(request):
     wishlist_items = WishlistItem.objects.filter(wishlist__user=request.user).select_related('product')
     return render(request, 'cart_wishlist/wishlist.html', {'wishlist_items': wishlist_items})
 
 
-@login_required(login_url='login')
+@login_required(login_url='user_login')
 def toggle_wishlist(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':        
         product_id = request.POST.get('product_id')
