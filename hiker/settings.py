@@ -157,7 +157,7 @@ STATIC_URL = '/static/'
 # Specify the static directories for each app
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'adminapp/static'),
-    os.path.join(BASE_DIR, 'hike/static'),
+    os.path.join(BASE_DIR, 'hiker/static'),
 ]
 
 
