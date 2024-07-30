@@ -157,13 +157,12 @@ STATIC_URL = '/static/'
 # Specify the static directories for each app
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'adminapp/static'),
-    os.path.join(BASE_DIR, 'hiker/static'),
+    os.path.join(BASE_DIR, 'hike/static'),
 ]
 
 
 
-# Collect static files to this directory
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # Default primary key field type
