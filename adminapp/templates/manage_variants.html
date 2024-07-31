@@ -24,7 +24,7 @@
         <div class="variant-section">
             <h3>{{ variant.name }}</h3>
             <div class="d-flex justify-content-between">
-                <ul class="variant-options">
+                <ul class="variant-options d-flex">
                     {% for option in variant.options.all %}
                     <li>{{ option.value }}</li>
                     {% endfor %}
