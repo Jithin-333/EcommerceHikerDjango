@@ -57,7 +57,7 @@
 {% comment %}-------------------- product detail cards----------------- {% endcomment %}
     <div class="row justify-content-center">
         {% for item in all_products %}
-        {% if forloop.counter <= 12 %}
+        {% if forloop.counter <= 8 %}
         {% with product=item.product %}
        
         <div class="product_card col-sm-10 col-md-4" data-aos="flip-left"  style="cursor: pointer;">
