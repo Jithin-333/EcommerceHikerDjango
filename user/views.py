@@ -39,6 +39,9 @@ def user_login_view(request):
 
 
 def user_login(request):
+    if request.user.is_authenticated:
+        return redirect(home)
+    
     if request.method == "POST":
         email = request.POST.get('email')
         password = request.POST.get('password')
