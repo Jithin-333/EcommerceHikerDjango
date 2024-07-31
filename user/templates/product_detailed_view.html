@@ -332,6 +332,12 @@ mainImageContainer.addEventListener('mouseleave', function() {
                         icon: 'error',
                         title: 'Oops...',
                         text: 'An error occurred, Please login first then try again.',
+                        showCancelButton: false,
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'user_login' %}";
+                        }
                     });
                 }
             });
@@ -431,7 +437,14 @@ mainImageContainer.addEventListener('mouseleave', function() {
                                 icon: 'error',
                                 title: 'Oops...',
                                 text: 'Please Login first then try again.',
+                                showCancelButton: false,
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "{% url 'user_login' %}";
+                                }
                             });
+                            
                         }
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
