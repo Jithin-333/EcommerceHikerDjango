@@ -168,7 +168,7 @@
     {% for item in similar_products %}
     {% with similar_product=item %}
    
-    <div class="product_card col-sm-10 col-md-4" onclick="location.href='{% url 'product_detail' similar_product.id %}';" style="cursor: pointer;"> 
+    <div class="product_card col-sm-10 col-md-4" > 
         {% for offer in item.offers %}
         {% if offer.discount_percentage %}
         <div class="offer-banner">
@@ -176,49 +176,50 @@
         </div>
         {% endif %}
         {% endfor %}
-        <div class="add_to_wishlist">
-            <i class="far fa-heart fa-2x"></i>
+        
+        <div class="add_to_wishlist" data-product-id="{{ similar_product.id }}">
+            <i class="far fa-heart fa-2x {% if similar_product in user.wishlist.items.all %}fas text-danger{% endif %}"></i>
         </div>
 
-        <div class="image">
-           
-            <img src="{{ similar_product.images.all.0.url }}" alt="{{ similar_product.images.all.0.alt_text }}">
+        <div onclick="location.href='{% url 'product_detail' similar_product.id %}';" style="cursor: pointer;">
+            <div class="image">
+                <img src="{{ similar_product.images.all.0.url }}" alt="{{ similar_product.images.all.0.alt_text }}">
+            </div>
+            <div class="product_info">
+                <h2 class="text-center">{{ similar_product.name }}</h2>
+                <h2 class="product_name">{{ similar_product.short_description }}</h2>
+                <p>{{ similar_product.category.name }}</p>
+                <div class="d-flex ">
+                    <div class="colors">
+                        <i class="fas fa-star gold-star"></i>
+
+                        <i class="fa fa-star gold-star"></i>
+                        <i class="fa fa-star gold-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <div>
+                    
+                        {% if similar_product.stock == 0 %}
+                            <p class="colors ps-5 text-danger">Out of Stock</p>
+                        {% else %}
+                            <p class="colors ps-5">Only {{ similar_product.stock }} left</p>
+                        {% endif %}
+
+
+                    </div>
+                    
+                </div>
+                <div class="price d-flex">
+                    <span class="_price">₹{{similar_product.price}}</span>
+                    <span class="ps-3 pt-1 text-decoration-line-through">₹3,999</span>
+                    {% comment %} {% if product.discount_price %}
+                        <span class="ps-3 pt-1 text-decoration-line-through">₹{{ product.original_price }}</span>
+                    {% endif %} {% endcomment %}
+                </div>
+
             
-        </div>
-        <div class="product_info">
-            <h2 class="text-center">{{ similar_product.name }}</h2>
-            <h2 class="product_name">{{ similar_product.short_description }}</h2>
-            <p>{{ similar_product.category.name }}</p>
-            <div class="d-flex ">
-                <div class="colors">
-                    <i class="fas fa-star gold-star"></i>
-
-                    <i class="fa fa-star gold-star"></i>
-                    <i class="fa fa-star gold-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                </div>
-                <div>
-                
-                    {% if similar_product.stock == 0 %}
-                        <p class="colors ps-5 text-danger">Out of Stock</p>
-                    {% else %}
-                        <p class="colors ps-5">Only {{ similar_product.stock }} left</p>
-                    {% endif %}
-
-
-                </div>
-                
             </div>
-            <div class="price d-flex">
-                <span class="_price">₹{{similar_product.price}}</span>
-                <span class="ps-3 pt-1 text-decoration-line-through">₹3,999</span>
-                {% comment %} {% if product.discount_price %}
-                    <span class="ps-3 pt-1 text-decoration-line-through">₹{{ product.original_price }}</span>
-                {% endif %} {% endcomment %}
-            </div>
-
-           
         </div>
     </div>
     
