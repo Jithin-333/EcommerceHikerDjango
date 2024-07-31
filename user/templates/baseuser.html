@@ -74,13 +74,35 @@
             
           <div class="d-flex headicon justify-content-between ms-5 me-5">
             
-              <li class="nav-item " data-bs-toggle="tooltip" data-bs-placement="bottom" title="Wishlist">
+              {% comment %} <li class="nav-item " data-bs-toggle="tooltip" data-bs-placement="bottom" title="Wishlist">
                 <a class="nav-link text-light  " href="{% url 'wishlist' %}"><i class="fas fa-heart fa-2x wishlist-icon"></i></a>
+              </li> {% endcomment %}
+              <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Wishlist">
+                <a class="nav-link text-light position-relative" href="{% url 'wishlist' %}">
+                    <i class="fas fa-heart fa-2x wishlist-icon"></i>
+                    {% if wishlist_count > 0 %}
+                    <span class="position-absolute top-0 start-90 translate-middle badge rounded-pill bg-danger">
+                        {{ wishlist_count }}
+                        <span class="visually-hidden">unread messages</span>
+                    </span>
+                    {% endif %}
+                </a>
+              </li>
+              <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cart">
+                <a class="nav-link text-light position-relative" href="{% url 'user_cart' %}">
+                    <i class="fas fa-shopping-cart fa-2x shopping-icon"></i>
+                    {% if cart_count > 0 %}
+                    <span class="position-absolute top-0 start-90 translate-middle badge rounded-pill bg-danger">
+                        {{ cart_count }}
+                        <span class="visually-hidden">unread messages</span>
+                    </span>
+                    {% endif %}
+                </a>
               </li>
             
-              <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cart">
+              {% comment %} <li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cart">
                 <a class="nav-link text-light" href="{% url 'user_cart' %}"><i class="fas fa-shopping-cart fa-2x shopping-icon"></i></a>
-              </li>
+              </li> {% endcomment %}
 
               {% if user.is_authenticated %}
                   <li class="nav-item  dropdown" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Hi {{ user.first_name }}!">

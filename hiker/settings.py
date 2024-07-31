@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-ypu&qnops5rhf9r&xeiydsw2q2-rbl^hz47rm(&)i2@n8poo7o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['13.49.64.213', 'localhost', 'hikercart.shop', 'www.hikercart.shop']
+ALLOWED_HOSTS = ['13.49.64.213', 'localhost', 'hikercart.shop', 'www.hikercart.shop','127.0.0.1']
 
 
 # Application definition
@@ -79,7 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
+                'user.utils.context_processors.cart_wishlist_counts',  # Add this line
             ],
         },
     },
