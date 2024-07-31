@@ -87,7 +87,7 @@
                                 <div class="col-6 col-md-3 text-center mb-3 mb-md-0">
                                 
                                     <h6 class="text-muted">Payment & Total</h6>
-                                    <p><strong>Total Amount:</strong> ₹{{ order.total_amount }}</p>
+                                    <p><strong>Total Amount:</strong> ₹{{ item.subtotal }}</p>
                                     <p><strong>Payment Method:</strong> 
                                         {% if order.payment_method == 'PAID' %}
                                             <span class="text-success">{{ order.get_payment_method_display }} (RazorPay)</span>
