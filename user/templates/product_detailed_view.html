@@ -328,7 +328,11 @@ mainImageContainer.addEventListener('mouseleave', function() {
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', error);
-                    alert('An error occurred while adding the item to the cart. Please try again.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'An error occurred, Please login first then try again.',
+                    });
                 }
             });
         });
@@ -368,6 +372,13 @@ mainImageContainer.addEventListener('mouseleave', function() {
                         
                         // Optionally, you can also toggle a class for styling
                         button.toggleClass('in-wishlist', response.in_wishlist);
+                    }else {
+                        // Handle error case
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while updating the wishlist. Please try again.',
+                        });
                     }
                 },
                 error: function() {
@@ -422,7 +433,7 @@ mainImageContainer.addEventListener('mouseleave', function() {
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: 'An error occurred. Please try again.',
+                            text: 'An error occurred. Please Login first then try again.',
                         });
                     }
                 });
