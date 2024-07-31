@@ -377,8 +377,15 @@ mainImageContainer.addEventListener('mouseleave', function() {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'An error occurred while updating the wishlist. Please try again.',
+                            text: 'An error occurred,Please Login first then try again.',
+                            showCancelButton: false,
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{% url 'user_login' %}";
+                            }
                         });
+                    
                     }
                 },
                 error: function() {
@@ -423,7 +430,7 @@ mainImageContainer.addEventListener('mouseleave', function() {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Oops...',
-                                text: 'An unexpected error occurred. Please try again.',
+                                text: 'Please Login first then try again.',
                             });
                         }
                     },
@@ -433,7 +440,7 @@ mainImageContainer.addEventListener('mouseleave', function() {
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: 'An error occurred. Please Login first then try again.',
+                            text: 'An unexpected error occurred. Please try again.An error occurred.',
                         });
                     }
                 });
