@@ -379,14 +379,63 @@ mainImageContainer.addEventListener('mouseleave', function() {
                 }
             });
         });
-        $('.add_to_wishlist').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var productId = $(this).data('product-id');
-            var heartIcon = $(this).find('i');
-            toggleWishlist(productId, heartIcon);
-        });
+       
     });
     </script>
+    <script>
+        $(document).ready(function() {
+            function toggleWishlist(productId, heartIcon) {
+                $.ajax({
+                    url: '{% url "toggle_wishlist" %}',
+                    type: 'POST',
+                    data: {
+                        'product_id': productId,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log('Success:', response);
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Wishlist Updated',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 1600
+                            });
+                            if (response.in_wishlist) {
+                                heartIcon.removeClass('far').addClass('fas text-danger');
+                            } else {
+                                heartIcon.removeClass('fas text-danger').addClass('far');
+                            }
+                        } else {
+                            console.error('Unexpected response:', response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'An unexpected error occurred. Please try again.',
+                            });
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error:', textStatus, errorThrown);
+                        console.log('Response:', jqXHR.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'An error occurred. Please try again.',
+                        });
+                    }
+                });
+            }
+        
+            $('.add_to_wishlist').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var productId = $(this).data('product-id');
+                var heartIcon = $(this).find('i');
+                toggleWishlist(productId, heartIcon);
+            });
+        });
+        </script>
 
 {% endblock user_content %}
