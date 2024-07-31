@@ -379,6 +379,13 @@ mainImageContainer.addEventListener('mouseleave', function() {
                 }
             });
         });
+        $('.add_to_wishlist').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var productId = $(this).data('product-id');
+            var heartIcon = $(this).find('i');
+            toggleWishlist(productId, heartIcon);
+        });
     });
     </script>
 
