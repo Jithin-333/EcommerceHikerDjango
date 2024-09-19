@@ -428,7 +428,9 @@ def profile_change_password(request):
 @login_required(login_url='user_login')
 def wallet(request):
     wallet, created = Wallet.objects.get_or_create(user=request.user)
-    return render(request, 'cart_wishlist/wallet.html', {'wallet': wallet})
+    transactions = wallet.transactions.all().order_by('-timestamp')[:10]  # Get the latest 10 transactions
+    return render(request, 'cart_wishlist/wallet.html', {'wallet': wallet, 'transactions': transactions})
+
 
 
 @login_required(login_url='user_login')

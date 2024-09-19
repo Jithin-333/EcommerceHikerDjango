@@ -55,7 +55,12 @@ from reportlab.lib.styles import getSampleStyleSheet
 from django.core.exceptions import ValidationError
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from io import BytesIO
 
 
 
@@ -432,19 +437,61 @@ def manage_variants(request):
             else:
                 messages.error(request, 'Variant name is required.')
         
+        elif action == 'edit_variant':
+            variant_id = request.POST.get('variant_id')
+            variant_name = request.POST.get('variant_name')
+            if variant_id and variant_name:
+                variant = get_object_or_404(Variant, id=variant_id)
+                variant.name = variant_name
+                variant.save()
+                messages.success(request, f'Variant "{variant_name}" updated successfully.')
+            else:
+                messages.error(request, 'Both variant ID and name are required.')
+        
+        elif action == 'delete_variant':
+            variant_id = request.POST.get('variant_id')
+            if variant_id:
+                variant = get_object_or_404(Variant, id=variant_id)
+                variant_name = variant.name
+                variant.delete()
+                messages.success(request, f'Variant "{variant_name}" deleted successfully.')
+            else:
+                messages.error(request, 'Variant ID is required.')
+        
         elif action == 'add_option':
             variant_id = request.POST.get('variant_id')
             option_value = request.POST.get('option_value')
             if variant_id and option_value:
-                variant = Variant.objects.get(id=variant_id)
+                variant = get_object_or_404(Variant, id=variant_id)
                 VariantOption.objects.create(variant=variant, value=option_value)
                 messages.success(request, f'Option "{option_value}" added to "{variant.name}".')
             else:
                 messages.error(request, 'Both variant and option value are required.')
         
+        elif action == 'edit_option':
+            option_id = request.POST.get('option_id')
+            option_value = request.POST.get('option_value')
+            if option_id and option_value:
+                option = get_object_or_404(VariantOption, id=option_id)
+                option.value = option_value
+                option.save()
+                messages.success(request, f'Option updated to "{option_value}" successfully.')
+            else:
+                messages.error(request, 'Both option ID and value are required.')
+        
+        elif action == 'delete_option':
+            option_id = request.POST.get('option_id')
+            if option_id:
+                option = get_object_or_404(VariantOption, id=option_id)
+                option_value = option.value
+                option.delete()
+                messages.success(request, f'Option "{option_value}" deleted successfully.')
+            else:
+                messages.error(request, 'Option ID is required.')
+        
         return redirect('manage_variants')
 
-    variants = Variant.objects.all()
+    variants = Variant.objects.all().order_by()
     return render(request, 'manage_variants.html', {'variants': variants})
 
 
@@ -678,9 +725,9 @@ class SalesReportView(View):
 
             # Daily sales data for chart
             daily_sales = orders.annotate(date=TruncDate('created_at')).values('date').annotate(
-                daily_total=Sum('total_amount'),
-                daily_discount=Sum(F('items__price') * F('items__quantity') - F('total_amount')),
-                order_count=Count('id')
+            daily_total=Sum('total_amount'),
+            daily_discount=Sum(F('items__price') * F('items__quantity') - F('total_amount')),
+            order_count=Count('id')
             ).order_by('date')
 
             daily_sales_data = [
@@ -690,7 +737,7 @@ class SalesReportView(View):
                     'daily_discount': float(item['daily_discount']),
                     'order_count': item['order_count']
                 } for item in daily_sales
-            ]
+    ]
 
             # Payment method breakdown
             payment_methods = orders.values('payment_method').annotate(
@@ -751,109 +798,111 @@ class SalesReportView(View):
         
         return report_data
 
+
     def download_csv_report(self, report_data, start_date, end_date):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="sales_report_{start_date}_to_{end_date}.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(['Order Number', 'Date', 'Customer', 'Total Amount', 'Status', 'Payment Method', 'Items'])
+        writer.writerow([
+            'Order Number', 'Date', 'Customer', 'Total Amount', 'Status', 'Payment Method', 
+            'Payment Status', 'Product', 'Quantity', 'Normal Price', 'Offer', 'Discount Price',
+            'Shipping Address', 'City', 'State', 'Country', 'Zip Code'
+        ])
         
         for order in report_data['orders']:
-            items = ", ".join([f"{item.product.name} ({item.quantity})" for item in order.items.all()])
-            writer.writerow([
-                order.id,
-                order.created_at.date(),
-                order.user.email,
-                order.total_amount,
-                order.payment_method,
-                items
-            ])
+            for item in order.items.all():
+                original_price = item.price
+                discount_amount = Decimal(item.offer / 100) * original_price if item.offer else 0
+                discounted_price = original_price - discount_amount
+
+                writer.writerow([
+                    item.order_number,
+                    order.created_at.date(),
+                    order.user.email,
+                    order.total_amount,
+                    item.status,
+                    order.payment_method,
+                    item.payment_status,
+                    item.product.name,
+                    item.quantity,
+                    original_price,
+                    f"{item.offer}%" if item.offer else "N/A",
+                    discounted_price,
+                    order.shipping_address.apartment_address if order.shipping_address else "N/A",
+                    order.shipping_address.city if order.shipping_address else "N/A",
+                    order.shipping_address.state if order.shipping_address else "N/A",
+                    order.shipping_address.country if order.shipping_address else "N/A",
+                    order.shipping_address.zip_code if order.shipping_address else "N/A"
+                ])
 
         return response
+
+
     def download_pdf_report(self, report_data):
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=20, bottomMargin=20, leftMargin=20, rightMargin=20)
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=20, bottomMargin=20, leftMargin=20, rightMargin=20)
         elements = []
 
         styles = getSampleStyleSheet()
-        title = Paragraph("Sales Report", styles['Title'])
+        title_style = ParagraphStyle(name='CustomTitle', parent=styles['Title'], fontSize=16, spaceAfter=12)
+
+        # Title
+        title = Paragraph("Detailed Sales Report", title_style)
         elements.append(title)
         elements.append(Spacer(1, 12))
 
-        # Summary Table
-        summary_data = [
-            ["Total Sales", f"${report_data['total_sales']:.2f}"],
-            ["Order Count", str(report_data['order_count'])],
-            ["Total Discount", f"${report_data['total_discount']:.2f}"],
-            ["Coupon Usage", str(report_data['coupon_usage'])],
-            ["Avg Order Value", f"${report_data['avg_order_value']:.2f}"],
+        # Detailed Sales Table
+        table_data = [
+            ['Order Number', 'Date', 'Customer', 'Total Amount', 'Payment Method', 
+            'Payment Status', 'Product', 'Quantity', 'Normal Price', 'Offer', 'Discount Price']
+            # 'Shipping Address', 'City', 'State', 'Country', 'Zip Code']
         ]
-        summary_table = Table(summary_data)
-        summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
-            ('TOPPADDING', (0, 1), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        elements.append(summary_table)
-        elements.append(Spacer(1, 12))
 
-        # Top Products Table
-        elements.append(Paragraph("Top 5 Selling Products", styles['Heading2']))
-        top_products_data = [["Product", "Total Quantity"]]
-        top_products_data.extend([[p['product__name'], p['total_quantity']] for p in report_data['top_products']])
-        top_products_table = Table(top_products_data)
-        top_products_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
-            ('TOPPADDING', (0, 1), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        elements.append(top_products_table)
-        elements.append(Spacer(1, 12))
+        for order in report_data['orders']:
+            for item in order.items.all():
+                original_price = item.price
+                discount_amount = Decimal(item.offer / 100) * original_price if item.offer else 0
+                discounted_price = original_price - discount_amount
 
-        # Payment Methods Table
-        elements.append(Paragraph("Payment Methods", styles['Heading2']))
-        payment_methods_data = [["Payment Method", "Count", "Total"]]
-        payment_methods_data.extend([[pm['payment_method'], pm['count'], f"${pm['total']:.2f}"] for pm in report_data['payment_methods']])
-        payment_methods_table = Table(payment_methods_data)
-        payment_methods_table.setStyle(TableStyle([
+                table_data.append([
+                    item.order_number,
+                    order.created_at.strftime('%Y-%m-%d'),
+                    order.user.email,
+                    f"${order.total_amount:.2f}",
+                    item.status,
+                    order.payment_method,
+                    # item.payment_status,
+                    item.product.name,
+                    str(item.quantity),
+                    f"${original_price:.2f}",
+                    f"{item.offer}%" if item.offer else "N/A",
+                    f"${discounted_price:.2f}",
+                    #order.shipping_address.apartment_address if order.shipping_address else "N/A",
+                    # order.shipping_address.city if order.shipping_address else "N/A",
+                    # order.shipping_address.state if order.shipping_address else "N/A",
+                    # order.shipping_address.country if order.shipping_address else "N/A",
+                    # order.shipping_address.zip_code if order.shipping_address else "N/A"
+                ])
+
+        table = Table(table_data, repeatRows=1)
+        table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
             ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
-            ('TOPPADDING', (0, 1), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('TOPPADDING', (0, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
-        elements.append(payment_methods_table)
+        elements.append(table)
 
         # Build PDF
         doc.build(elements)
@@ -864,7 +913,6 @@ class SalesReportView(View):
         response.write(buffer.getvalue())
         
         return response
-
 
 from django.views.generic import ListView
 from products.models import WalletTransaction

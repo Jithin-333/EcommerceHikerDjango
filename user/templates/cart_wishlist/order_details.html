@@ -216,6 +216,7 @@
                                     <th>Product</th>
                                     <th>Quantity</th>
                                     <th>Price</th>
+                                    <th>Offer</th>
                                     <th>Subtotal</th>
                                 </tr>
                             </thead>
@@ -223,7 +224,8 @@
                                 <tr>
                                     <td>{{ item.product.name }}</td>
                                     <td>{{ item.quantity }}</td>
-                                    <td>₹{{ order.price|floatformat:"2" }}</td>
+                                    <td>₹{{ item.product.price|floatformat:"2" }}</td>
+                                    <td>{{ item.offer }}%</td>
                                     <td>₹{{ item.subtotal|floatformat:"2" }}</td>
                                 </tr>
                                 <tr>

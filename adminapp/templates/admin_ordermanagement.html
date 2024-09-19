@@ -156,16 +156,26 @@
 
             </div>
             <div class="modal-body">
-                <h4>Order Id: {{item.order_number }}</h4>
-                <p>User: {{order.user.username}}</p>
-                <p>Buyer:{{ order.shipping_address.name }}</p>
-                <p>Total Price: {{item.price|floatformat:"0"}}.00</p>
-                <p></p>
+                <div class="row">
+                    <div class = "col-6">
+                        <h4>Order Id: {{item.order_number }}</h4>
+                        <p>User: {{order.user.username}}</p>
+                        <p>Buyer:{{ order.shipping_address.name }}</p>
+                        <p>Total Price: {{item.price|floatformat:"0"}}.00</p>
+                    </div>
+                    <div class="col-6">
+                        <p>Address:<br>{{order.shipping_address.apartment_address}}</p>
+                        <p>city: {{order.shipping_address.city}}</p>
+                        <p>state: {{order.shipping_address.state}}</p>
+                    </div>
+                </div>
+                
                 <table class="table table-striped table-bordered">
                     <thead>
                         <tr>
                             <th>Product</th>
                             <th>Name</th>
+                            <th>offer</th>
                             <th>Quantity</th>
                             <th>Price</th>
                         </tr>
@@ -175,6 +185,7 @@
                         <tr >
                             <td><img src="{{ item.product.images.first.url }}" alt="{{ item.product.name }}" class="img-detail" style="max-width: 80px;"></td>
                             <td>{{ item.product.name }}</td>
+                            <td>{{ item.offer }}%</td>
                             <td>{{ item.quantity }}</td>
                             <td>{{ item.price|floatformat:"0" }}.00</td>
                         </tr>

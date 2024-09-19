@@ -1,11 +1,13 @@
 {% extends 'admin_base.html' %}
 {% block title %}Manage Variant{% endblock title %}
 
-
 {% block admin_content %}
+<div class="variant-heading ">
+    <h1 class="mb-4">Manage Variants and Options     <sup type="button" class="btn" data-bs-toggle="modal" data-bs-target="#addVariantModal"><i class="fas fa-plus-circle" style="font-size: 24px; color: green;"></i></sup>
+    </h1>
+</div>
 
-  
-<h1 class="mb-4 variant-heading">Manage Variants and Options</h1>
+
 <div class="container manage_variant">
     {% if messages %}
     <ul class="messages">
@@ -15,18 +17,30 @@
     </ul>
     {% endif %}
     <div>
-        
-        <div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-center">
             <h2>Existing Variants</h2>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Add Variant</button>
         </div>
         {% for variant in variants %}
         <div class="variant-section">
-            <h3>{{ variant.name }}</h3>
+            <div class="d-flex justify-content-between align-items-center pb-4">
+                <h3>{{ variant.name }}</h3>
+                <div>
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editVariantModal{{ variant.id }}"><i class="fa fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteVariantModal{{ variant.id }}"><i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
             <div class="d-flex justify-content-between">
                 <ul class="variant-options d-flex">
                     {% for option in variant.options.all %}
-                    <li>{{ option.value }}</li>
+                    <li class = "d-block">
+                        <div>{{ option.value }}</div>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editOptionModal{{ option.id }}"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteOptionModal{{ option.id }}"><i class="fa fa-trash"></i></button>
+                        </div>
+                    </li>
                     {% endfor %}
                 </ul>
                 <form method="post" class="form-inline text-center">
@@ -34,42 +48,133 @@
                     <input type="hidden" name="action" value="add_option">
                     <input type="hidden" name="variant_id" value="{{ variant.id }}">
                     <input type="text" name="option_value" class="form-control mr-2" placeholder="New Option Value" required>
-                    <button type="submit" class=" btn-success mt-3">Add Option</button>
+                    <button type="submit" class="btn btn-success mt-3">Add Option</button>
                 </form>
             </div>
         </div>
         <hr>
+        
+        <!-- Edit Variant Modal -->
+        <div class="modal fade" id="editVariantModal{{ variant.id }}" tabindex="-1" aria-labelledby="editVariantModalLabel{{ variant.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editVariantModalLabel{{ variant.id }}">Edit Variant</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <input type="hidden" name="action" value="edit_variant">
+                            <input type="hidden" name="variant_id" value="{{ variant.id }}">
+                            <input type="text" name="variant_name" class="form-control" value="{{ variant.name }}" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-success">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Variant Modal -->
+        <div class="modal fade" id="deleteVariantModal{{ variant.id }}" tabindex="-1" aria-labelledby="deleteVariantModalLabel{{ variant.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteVariantModalLabel{{ variant.id }}">Delete Variant</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the variant "{{ variant.name }}"?</p>
+                            <input type="hidden" name="action" value="delete_variant">
+                            <input type="hidden" name="variant_id" value="{{ variant.id }}">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% for option in variant.options.all %}
+        <!-- Edit Option Modal -->
+        <div class="modal fade" id="editOptionModal{{ option.id }}" tabindex="-1" aria-labelledby="editOptionModalLabel{{ option.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editOptionModalLabel{{ option.id }}">Edit Option</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <input type="hidden" name="action" value="edit_option">
+                            <input type="hidden" name="option_id" value="{{ option.id }}">
+                            <input type="text" name="option_value" class="form-control" value="{{ option.value }}" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-success">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Option Modal -->
+        <div class="modal fade" id="deleteOptionModal{{ option.id }}" tabindex="-1" aria-labelledby="deleteOptionModalLabel{{ option.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteOptionModalLabel{{ option.id }}">Delete Option</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the option "{{ option.value }}"?</p>
+                            <input type="hidden" name="action" value="delete_option">
+                            <input type="hidden" name="option_id" value="{{ option.id }}">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
         {% endfor %}
     </div>
 </div>
 
-
-  {% comment %} modal for adding variant {% endcomment %}
-<!-- Modal -->
-<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<!-- Add Variant Modal -->
+<div class="modal fade" id="addVariantModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addVariantModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <div class="variant-section">
-                <h2>Add New Variant</h2>
-                <form method="post" class="form-inline mb-3">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="add_variant">
-                    <input type="text" name="variant_name" class="form-control mr-2" placeholder="Variant Name" required>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-dark">Add Variant</button>
-                    </div>
-                </form>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addVariantModalLabel">Add New Variant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="add_variant">
+                    <input type="text" name="variant_name" class="form-control" placeholder="Variant Name" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success">Add Variant</button>
+                </div>
+            </form>
         </div>
-       
-      </div>
     </div>
-  </div>
+</div>
 {% endblock admin_content %}

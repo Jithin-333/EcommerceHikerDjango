@@ -684,6 +684,11 @@ body{
         background-color: #b2f8c4;
         padding: 20px;
         border-radius: 8px;
+
+        .form-control[readonly] {
+            background-color: #d4e9ff; /* Bootstrap's default read-only background color */
+            cursor: not-allowed;
+        }
     }
     
     .card-header {

@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.core.paginator import Paginator
+from django.views.decorators.cache import never_cache
+
 
 
 from django.utils import timezone
@@ -174,7 +176,7 @@ def set_default_address(request, address_id, address_type):
 
 
 #------------CHECKOUTPAGE---------##
-
+@never_cache
 @login_required(login_url='user_login')
 def checkout(request):
     try:
@@ -251,6 +253,7 @@ def calculate_order_total(cart_items, coupon=None):
         total_amount -= Decimal(coupon.discount)
     return max(total_amount, Decimal('0'))
 
+@never_cache
 @login_required(login_url='user_login')
 @require_POST
 def place_order(request):
@@ -368,7 +371,7 @@ def place_order(request):
 
             total_amount = calculate_order_total(cart_items, coupon)
 
-            if payment_method == 'COD' and total_amount < 1000:
+            if payment_method == 'COD' and total_amount > 1000:
                 return JsonResponse({'status': 'error', 'message': 'Order should be 1000 above'})
             
              # Handle coupon usage (if applicable)
@@ -508,7 +511,7 @@ def place_order(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
-
+@never_cache
 @login_required
 def razorpay_payment(request):
     order_id = request.GET.get('order')
@@ -640,7 +643,7 @@ def order_return(request, order_id, item_id):
     return render(request, 'cart_wishlist/return_form.html', {'form': form, 'order': orderitem})
 
 
-
+@never_cache
 @login_required(login_url='user_login')
 def cancel_order(request, order_id,item_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
@@ -784,8 +787,8 @@ def generate_pdf_function(request, order_id, item_id):
 
     # Table header and rows
     data = [
-        ["Product", "Quantity", "Price", "Subtotal"],
-        [orderitem.product.name, orderitem.quantity, f"Rs.{orderitem.price}", f"Rs.{orderitem.subtotal}"],
+        ["Product", "Quantity", "Offer", "Price", "Subtotal"],
+        [orderitem.product.name, orderitem.quantity, orderitem.offer, f"Rs.{orderitem.price}", f"Rs.{orderitem.subtotal}"],
         ["", "", "Total", f"Rs.{orderitem.subtotal}"],
     ]
 

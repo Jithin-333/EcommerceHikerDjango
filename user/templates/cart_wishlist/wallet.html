@@ -80,7 +80,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {% for transaction in wallet.transactions.all|slice:":10" %}
+                                                        {% for transaction in transactions %}
                                                         <tr>
                                                             <td>{{ transaction.timestamp|date:"d M Y H:i" }}</td>
                                                             <td>{{ transaction.description }}</td>
@@ -94,35 +94,7 @@
                                                         {% endfor %}
                                                     </tbody>
                                                 </table>
-                                                {% if wallet.transactions.all.count > 10 %}
-                                                <div class="text-center mt-3">
-                                                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAllTransactions" aria-expanded="false" aria-controls="collapseAllTransactions">
-                                                        Show All Transactions
-                                                    </button>
-                                                </div>
-                                                <div class="collapse mt-3" id="collapseAllTransactions">
-                                                    <table class="table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Date</th>
-                                                                <th>Description</th>
-                                                                <th>Amount</th>
-                                                                <th>Type</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for transaction in wallet.transactions.all|slice:"10:" %}
-                                                            <tr>
-                                                                <td>{{ transaction.timestamp|date:"d M Y H:i" }}</td>
-                                                                <td>{{ transaction.description }}</td>
-                                                                <td>₹{{ transaction.amount|floatformat:2 }}</td>
-                                                                <td>{{ transaction.get_transaction_type_display }}</td>
-                                                            </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                {% endif %}
+                                               
                                             </div>
                                         </div>
                                     </div>
