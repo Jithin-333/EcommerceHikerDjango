@@ -46,7 +46,7 @@ def user_login(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        # Validate email and password fields
+        # Validate email and password 
         if not email or not password:
             messages.warning(request, "Email and password are required.")
             return redirect('user_login')
