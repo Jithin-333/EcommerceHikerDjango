@@ -105,7 +105,7 @@ def user_signup(request):
             messages.warning(request, "password not matching")
             return redirect(user_signup)
         
-         # Hash the password before saving
+         # Hash the password before sa
 
         new_user = get_user_model().objects.create(
             username=username,
