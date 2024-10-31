@@ -25,5 +25,5 @@
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/hiker-ecommerce.git
-   cd hiker-ecommerce
+   git clone https://github.com/yourusername/hiker-ecommerce.git](https://github.com/Jithin-333/EcommerceHikerDjango.git
+   cd hiker
